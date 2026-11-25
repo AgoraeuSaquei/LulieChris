@@ -11,18 +11,16 @@ const assetURL=path=>path;
 const images={};
 const names=[];
 for(const who of ['luli','chris'])names.push(`${who}_sheet`);
-for(const who of ['luli','chris'])for(let i=0;i<4;i++)names.push(`${who}_emotion${i}`);
-for(const who of ['luli','chris'])for(const suffix of ['portrait'])names.push(`${who}_${suffix}`);
+const portraitMoods={luli:['normal','feliz','pensando','seria','surpresa'],chris:['normal','sorrindo','pensando','irritado','agradecido'],narrator:['serio','feliz','suspirando']};
+for(const [who,ms] of Object.entries(portraitMoods))for(const m of ms)names.push(`${who}_${m}`);
 for(const npc of ['guardian','apple','melon','strawberry','guard','healer'])names.push('npc_'+npc);
 for(const npc of ['guardian','apple','melon','strawberry','guard','healer'])names.push('npc_sheet_'+npc);
 for(const enemy of ['plum','lemon','pepper','pumpkin','bat','vine'])names.push('enemy_sheet_'+enemy);
 function assetPath(name){
  let m=/^(luli|chris)_sheet$/.exec(name);
  if(m)return `assets/characters/${m[1]}/spritesheet.png`;
- m=/^(luli|chris)_emotion([0-3])$/.exec(name);
- if(m)return `assets/characters/${m[1]}/emotes/emotion_${m[2]}.png`;
- m=/^(luli|chris)_(portrait|happy)$/.exec(name);
- if(m)return `assets/characters/${m[1]}/emotes/${m[2]}.png`;
+ m=/^(luli|chris|narrator)_(.+)$/.exec(name);
+ if(m)return m[1]==='narrator'?`assets/narrador/narrador-${m[2]}.png`:`assets/characters/${m[1]}/emotes/${m[1]}-${m[2]}.png`;
  m=/^npc_sheet_(.+)$/.exec(name);if(m)return `assets/npcs/sheets/${m[1]}_sheet.png`;
  m=/^npc_(.+)$/.exec(name);if(m)return `assets/npcs/${m[1]}.png`;
  m=/^enemy_sheet_(.+)$/.exec(name);if(m)return `assets/enemies/sheets/${m[1]}_sheet.png`;
@@ -65,17 +63,19 @@ const save=()=>{try{localStorage.setItem(STATE_KEY,JSON.stringify(progress))}cat
 progress.unlocked=clamp(Math.floor(Number(progress.unlocked)||0),0,LEVELS.length-1);
 let mode='menu',levelIndex=0,level=null, player=null,companion=null,active='luli',luliPresent=true,heart=3,score=0,levelFruit=0;
 let puzzle=[], parked=false, duoPress=null;
+let storySeen=new Set(),storyCooldown=0;const STORY=window.LULI_STORY||[];
+const asSpeech=ls=>speech(...ls.map(l=>[l.speaker,l.mood,l.text]));
 let fruits=[],enemies=[],npcList=[],editorEvents=[],particles=[],rescue=null,history=[],lastFrame=0,accumulator=0,clock=0,cameraX=0,cameraY=0;
 let checkpointX=90,checkpointY=462,invulnerable=0,coyote=0,jumpBuffer=0,dialogue=[],dialogIndex=0,dialogReturn='playing',dialogAction=null,nearNPC=null,toastClock=0,playerTime=0,finishOnce=false;
 let view={w:960,h:540},muted=!!progress.muted,audioCtx=null;
 const keys={left:false,right:false,jump:false};
 const npcText={
- guardian:[['guardian','dica','A luz da minha lanterna aponta o caminho para a ponte! Sigam em frente e pulem sobre as criaturas para espantá-las.'],['chris','surpreso','Você sabe como podemos voltar para casa?'],['guardian','feliz','É difícil não reconhecer a rainha com uma coroa de ouro na cabeça.']],
+ guardian:[['guardian','dica','A luz da minha lanterna aponta o caminho para a ponte! Sigam em frente e pulem sobre as criaturas para espantá-las.'],['chris','surpreso','Você sabe como podemos voltar para casa?'],['guardian','feliz','Sigam juntos, e logo encontrarão o caminho de casa.']],
  apple:[['apple','dica','Frutas brilhantes recuperam sua energia. Junte 12 para ganhar um coração, se precisar.'],['apple','dica','E os monstrinhos só podem ser derrotados pulando bem em cima deles. Nada de encostar de lado!']],
  melon:[['melon','dica','Esta é a Ponte Prismática, o último caminho para casa.'],['melon','dica','A Abóbora Casca-Dura precisa de vários pulos na cabeça. Não é das mais amigáveis...']],
  strawberry:[['strawberry','feliz','Luli! Chris! Que bom encontrar vocês! O bosque é perigoso.'],['luli','surpresa','Obrigada pelo aviso!'],['strawberry','dica','Cuidado com os limões elétricos e as pimentas saltitantes!']],
  guard:[['guard','dica','Atenção, viajantes! As frutas hostis tomaram conta da ponte.'],['guard','dica','A Capitã Pétala recomenda usar os saltos e evitar a investida das ameixas.']],
- healer:[['healer','feliz','Oi, queridos! Posso curar os machucados com minhas flores mágicas.'],['healer','dica','E, se a Luli desaparecer, posso restaurar a magia prismática dela uma vez nesta fase.']]
+ healer:[['healer','feliz','Oi, queridos! Posso curar os machucados com minhas flores mágicas.'],['healer','dica','E, se a Luli desaparecer, posso ajudar a trazê-la de volta uma vez nesta fase.']]
 };
 function speech(){return [...arguments].map(a=>({who:a[0],mood:a[1],text:a[2]}))}
 function beep(f=600,d=.09,wave='sine',vol=.045,slide=0){if(muted)return;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;if(!audioCtx)audioCtx=new A;if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=wave;o.frequency.setValueAtTime(f,audioCtx.currentTime);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(80,f+slide),audioCtx.currentTime+d);g.gain.setValueAtTime(vol,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0005,audioCtx.currentTime+d);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d+.01)}catch{}}
@@ -109,24 +109,25 @@ function startLevel(ix,keepHearts=false){levelIndex=ix;level=LEVELS[ix];FLOOR=(l
  player={x:level.spawn??95,y:(level.spawnY??FLOOR)-65,vx:0,vy:0,w:39,h:65,onGround:true,face:1,anim:0,landTimer:0,talkTimer:0};companion=bodyAt(Math.max(1,player.x-50),player.y,1);
  cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,(level.height||540)-view.h));checkpointX=level.spawn??95;checkpointY=level.spawnY??FLOOR;invulnerable=0;finishOnce=false;nearNPC=null;coyote=.1;jumpBuffer=0;playerTime=0;makeObjects();
  overlay.classList.add('hidden');hud.classList.remove('hidden');$('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');
- keys.left=keys.right=keys.jump=false;updateHUD();if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
+ keys.left=keys.right=keys.jump=false;storySeen=new Set();storyCooldown=1.2;updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
 }
 function updateHUD(){if(!level)return;$('levelText').textContent=(levelIndex+1)+'. '+level.name;$('duoText').textContent=luliPresent?(active.toUpperCase()+' • '+(parked?otherHero().toUpperCase()+' AGUARDA':'DUPLA')):'CHRIS SOZINHO';
  const status=$('duoText').parentElement;status.classList.toggle('rescuing',!luliPresent);$('heartText').textContent='♥ '.repeat(heart).trim()+' ♡'.repeat(3-heart);
  $('fruitText').textContent=levelFruit;$('progressFill').style.width=Math.round(clamp((player.x-(level.spawn??95))/Math.max(1,(level.gate??level.width)-(level.spawn??95)),0,1)*100)+'%';
  $('rescueBanner').classList.toggle('hidden',luliPresent);const boss=enemies.find(e=>e.type==='pumpkin'&&e.alive);$('bossHud').classList.toggle('hidden',!boss||Math.abs(player.x-boss.x)>650);if(boss)$('bossHearts').textContent='♥ '.repeat(boss.hp);
 }
-function showDialogue(lines,returnTo='playing',after=null){if(player)player.talkTimer=.5;dialogue=lines;dialogIndex=0;dialogReturn=returnTo;dialogAction=after;mode='dialog';dialog.classList.remove('hidden');interEl.classList.add('hidden');renderDialogue()}
-const moods={feliz:'♥',surpresa:'!',surpreso:'!',dica:'✧',história:'✦',confiante:'★',preocupado:'?',determinado:'⚡',fim:'♡'};
+function showDialogue(lines,returnTo='playing',after=null){if(!lines?.length)return;duoEnd(true);jumpBuffer=0;if(player)player.talkTimer=.5;dialogue=lines;dialogIndex=0;dialogReturn=returnTo;dialogAction=after;mode='dialog';dialog.classList.remove('hidden');interEl.classList.add('hidden');renderDialogue()}
+const moods={sorrindo:'♥',agradecido:'♥',pensando:'?',seria:'✦',serio:'✦',irritado:'!',suspirando:'…',feliz:'♥',surpresa:'!',surpreso:'!',dica:'✧',história:'✦',confiante:'★',preocupado:'?',determinado:'⚡',fim:'♡'};
+const normalizeMood=m=>String(m||'normal').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 function renderDialogue(){const d=dialogue[dialogIndex];if(!d)return;
  $('dialogSpeaker').textContent=npcList.find(n=>n.type===d.who&&n.studio?.customName)?.studio.customName||ACTORS[d.who]||d.who;$('dialogMood').textContent=d.mood;$('dialogText').textContent=d.text;$('emotionSticker').textContent=moods[d.mood]||'✦';
- const im=$('dialogPortrait');let src;
- if(d.who==='luli'||d.who==='chris'){const surprise=['surpresa','surpreso'].includes(d.mood);const idx=d.who==='luli'?(d.mood==='feliz'?1:surprise?2:0):(surprise?1:d.mood==='preocupado'?2:d.mood==='confiante'||d.mood==='feliz'?3:0);src=d.mood==='feliz'?assetPath(d.who+'_portrait'):assetPath(`${d.who}_emotion${idx}`)}
- else if(d.who==='narrator')src=assetPath('luli_portrait');else src=assetPath('npc_'+d.who);
- im.src=assetURL(src);im.onerror=()=>{im.onerror=null;im.src=assetURL(assetPath('luli_portrait'))};im.alt=`Retrato de ${ACTORS[d.who]||d.who}`;
+ const im=$('dialogPortrait');const who=d.who;dialog.dataset.speaker=who;const mood=normalizeMood(d.mood);const map={luli:{neutro:'normal',sorrindo:'feliz',agradecido:'feliz',preocupado:'pensando',preocupada:'pensando',confiante:'feliz',determinado:'seria',serio:'seria',irritado:'seria',surpreso:'surpresa'},chris:{neutro:'normal',feliz:'sorrindo',confiante:'sorrindo',surpresa:'pensando',surpreso:'pensando',preocupado:'pensando',preocupada:'pensando',serio:'normal',seria:'normal',determinado:'normal'},narrator:{historia:'serio',dica:'serio',fim:'feliz',neutro:'serio',normal:'serio'}};
+ const chosen=portraitMoods[who]?.includes(mood)?mood:(map[who]?.[mood]|| (who==='narrator'?'serio':'normal'));
+ const src=portraitMoods[who]?assetPath(who+'_'+chosen):assetPath('npc_'+who);
+ const fallback=who==='narrator'?'serio':'normal';im.onerror=()=>{im.onerror=null;if(portraitMoods[who]&&chosen!==fallback)im.src=assetPath(who+'_'+fallback);else im.style.visibility='hidden';};im.style.visibility='visible';im.src=assetURL(src);im.alt=`Retrato de ${ACTORS[who]||who}`;
  const box=im.parentElement;box.style.background=d.mood==='preocupado'?'radial-gradient(circle at 50% 30%,#65799e,#3a2f63 78%)':'radial-gradient(circle at 50% 30%,#a4799a,#4a3264 78%)';beep(500,.035,'sine',.025,120);
 }
-function nextDialogue(){if(mode!=='dialog')return;dialogIndex++;if(dialogIndex<dialogue.length){renderDialogue();return}dialog.classList.add('hidden');const cb=dialogAction;dialogAction=null;mode=dialogReturn;if(cb)cb();if(mode==='playing')toast('Siga em frente! ✦',1.5);if(mode==='won')showEndingPanel()}
+function nextDialogue(){if(mode!=='dialog')return;dialogIndex++;if(dialogIndex<dialogue.length){renderDialogue();return}dialog.classList.add('hidden');const cb=dialogAction;dialogAction=null;mode=dialogReturn;if(cb)cb();if(mode==='playing')storyCooldown=1.2;if(mode==='won')showEndingPanel()}
 function showMenu(){mode='menu';dialog.classList.add('hidden');hud.classList.add('hidden');overlay.classList.remove('hidden');overlay.innerHTML=ORIGINAL_MENU;
  $('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');toastEl.classList.remove('shown');const cont=$('continueBtn');if(progress.unlocked>0){cont.classList.remove('hidden');cont.textContent=`Continuar • fase ${progress.unlocked+1}`;}const status=$('campaignStatus');if(status)status.textContent=progress.completed?'Aventura concluída • 8/8':`${Math.min(progress.unlocked,7)} de 8 fases concluídas`;}
 function panel(kicker,title,description,buttons){overlay.classList.remove('hidden');overlay.innerHTML=`<div class="overlay-bg-stars"></div><section class="menu-panel"><div class="menu-eyebrow">${kicker}</div><h1>${title}</h1><p class="menu-description" style="max-width:510px;font-size:15px;margin:16px auto 20px">${description}</p><div class="menu-buttons">${buttons.map((b,i)=>`<button class="${i?'secondary-btn':'primary-btn'}" data-action="${b.action}">${b.label}</button>`).join('')}</div></section>`}
@@ -163,7 +164,7 @@ function triggerStudioEvent(trigger,x=player?.x,only=null){
 function interact(){if(player&&mode==='playing')player.talkTimer=.8;if(mode==='dialog'){nextDialogue();return}if(mode!=='playing')return;
  if(!nearNPC){toast('Aproxime-se de um NPC para conversar.');return}
  const npc=nearNPC;let lines=npc.studio?.dialogue?.length?npc.studio.dialogue.map(l=>[l.speaker||npc.type,l.mood||'feliz',l.text||'']):npcText[npc.type],heal=false;triggerStudioEvent('talk',npc.x);
- if((npc.studio?npc.studio.heal:npc.type==='healer')&&!npc.used){npc.used=true;heal=true;heart=Math.min(3,heart+(npc.studio?.healAmount||1));if(!luliPresent)restoreLuli(false);lines=npc.studio?.dialogue?.length?npc.studio.dialogue.map(l=>[l.speaker||npc.type,l.mood||'feliz',l.text||'']):[['healer','feliz','Flores prismáticas para vocês! Curei um coração e reforcei o feitiço da Luli.'],['luli','feliz','Obrigada, Alejandra! Voltamos para o caminho!'],['healer','dica','Cuidado: esta cura especial só funciona uma vez por fase.']];chime();updateHUD();}
+ if((npc.studio?npc.studio.heal:npc.type==='healer')&&!npc.used){npc.used=true;heal=true;heart=Math.min(3,heart+(npc.studio?.healAmount||1));if(!luliPresent)restoreLuli(false);lines=npc.studio?.dialogue?.length?npc.studio.dialogue.map(l=>[l.speaker||npc.type,l.mood||'feliz',l.text||'']):[['healer','feliz','Flores prismáticas para vocês! Curei um coração e ajudei Luli a recuperar as forças.'],['luli','feliz','Obrigada, Alejandra! Voltamos para o caminho!'],['healer','dica','Cuidado: esta cura especial só funciona uma vez por fase.']];chime();updateHUD();}
  else if(npc.type==='healer'&&npc.used)lines=[['healer','dica','Minhas flores especiais desta fase já foram usadas. Mas vocês podem recuperar Luli com o cristal prismático!']];
  showDialogue(speech(...lines));}
 function jump(){if(mode==='dialog'){nextDialogue();return}if(mode!=='playing')return;jumpBuffer=.15}
@@ -242,6 +243,13 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
  for(const f of fruits){if(f.found)continue;const fy=f.y+Math.sin(clock*3+f.phase)*5;const pc=player.x+player.w/2,py=player.y+player.h/2;if(Math.abs(pc-f.x)<27&&Math.abs(py-fy)<43){f.found=true;const val=f.value||1;score+=val;levelFruit+=val;triggerStudioEvent('collect',f.x);beep(670,.06,'sine',.028,400);if(levelFruit%12===0){if(heart<3){heart++;toast('♥ 12 frutas! Você ganhou um coração!')}else toast('✦ 12 frutas coletadas!');chime()}}}
  if(rescue){rescue.phase+=dt;const pc=player.x+player.w/2,py=player.y+player.h/2;
  if(Math.abs(pc-rescue.x)<34&&Math.abs(py-(rescue.y+Math.sin(clock*4)*10))<66){restoreLuli(true)}}
+ if(mode!=='playing')return;
+ storyCooldown=Math.max(0,storyCooldown-dt);
+ if(storyCooldown===0&&luliPresent&&!parked&&player.onGround&&invulnerable===0&&!enemies.some(e=>e.alive&&Math.abs(e.x-player.x)<100&&Math.abs(e.y-player.y)<90)){
+  const scenes=STORY[levelIndex]?.scenes||[];const feet=player.y+player.h;
+  const ix=scenes.findIndex((sc,i)=>!storySeen.has(i)&&player.x>=sc.x&&player.x<=(sc.xmax??sc.x+420)&&feet>=sc.ymin&&feet<=sc.ymax);
+  if(ix>=0){storySeen.add(ix);showDialogue(asSpeech(scenes[ix].lines));return;}
+ }
  if(editorEvents.length)for(const ev of editorEvents){if(ev.trigger!=='enter')continue;const inside=player.x+player.w>=ev.x&&player.x<=ev.x+(ev.width||160)&&player.y+player.h>=ev.y&&player.y<=ev.y+100;if(inside&&!ev.inside){ev.inside=true;triggerStudioEvent('enter',player.x,ev);if(mode!=='playing')return;}else ev.inside=inside;}
  if(level.checkpoint!==null&&(level.editorEntities?Math.abs(player.x-level.checkpoint)<60&&Math.abs(player.y+player.h-(level.checkpointY??FLOOR))<80&&checkpointX!==level.checkpoint:player.x>level.checkpoint&&checkpointX<level.checkpoint)){checkpointX=level.editorEntities?level.checkpoint:safeX(level.checkpoint+23);checkpointY=level.checkpointY??FLOOR;toast('✦ Checkpoint ativado!',3);chime()}
  const bossAlive=(level.editorEntities?level.editorRequiresBoss:levelIndex===2)&&enemies.some(e=>e.type==='pumpkin'&&e.alive);
