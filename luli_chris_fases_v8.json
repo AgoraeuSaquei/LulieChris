@@ -1,0 +1,3556 @@
+{
+  "schema": "luli-map-editor-v1",
+  "version": 4,
+  "spriteAssets": {},
+  "heroSprites": {
+    "luli": "",
+    "chris": ""
+  },
+  "title": "Luli & Chris — De volta para casa",
+  "sprite": {
+    "sheetWidth": 384,
+    "sheetHeight": 320,
+    "frame": 64,
+    "columns": 6,
+    "rows": 5,
+    "baseline": 61
+  },
+  "levels": [
+    {
+      "id": "stage-2",
+      "name": "Onde estamos?",
+      "tag": "Entre o bosque e os perigos",
+      "width": 1000,
+      "height": 540,
+      "theme": 0,
+      "entities": [
+        {
+          "id": "e131",
+          "kind": "ground",
+          "x": 0,
+          "y": 462,
+          "width": 720
+        },
+        {
+          "id": "e132",
+          "kind": "ground",
+          "x": 825,
+          "y": 462,
+          "width": 175
+        },
+        {
+          "id": "e133",
+          "kind": "ground",
+          "x": 968,
+          "y": 462,
+          "width": 32
+        },
+        {
+          "id": "e134",
+          "kind": "ground",
+          "x": 968,
+          "y": 462,
+          "width": 32
+        },
+        {
+          "id": "e135",
+          "kind": "platform",
+          "x": 405,
+          "y": 345,
+          "width": 170
+        },
+        {
+          "id": "e146",
+          "kind": "enemy",
+          "x": 544,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 52,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e153",
+          "kind": "fruit",
+          "x": 320,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e154",
+          "kind": "fruit",
+          "x": 512,
+          "y": 288,
+          "value": 1
+        },
+        {
+          "id": "e155",
+          "kind": "fruit",
+          "x": 768,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e164",
+          "kind": "event",
+          "x": 192,
+          "y": 384,
+          "width": 150,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Continue seguindo o caminho!",
+          "once": true,
+          "dialogue": []
+        },
+        {
+          "id": "e166",
+          "kind": "gate",
+          "x": 896,
+          "y": 480,
+          "requiresBoss": false
+        },
+        {
+          "id": "e167",
+          "kind": "spawn",
+          "x": 32,
+          "y": 448
+        },
+        {
+          "id": "e-3ef68707-70af-4bf6-9cf7-ec762785e3dc",
+          "kind": "npc",
+          "x": 384,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "guardian",
+          "heal": false,
+          "healAmount": 1,
+          "dialogue": [
+            {
+              "speaker": "guardian",
+              "mood": "feliz",
+              "text": "Olá, rainha Luli!"
+            },
+            {
+              "speaker": "luli",
+              "mood": "surpresa",
+              "text": "Olá, senhora! Tudo bem?"
+            },
+            {
+              "speaker": "chris",
+              "mood": "neutro",
+              "text": "Pergunta pra ela onde estamos."
+            },
+            {
+              "speaker": "luli",
+              "mood": "neutro",
+              "text": "Pergunta você! Ela está na tua frente."
+            },
+            {
+              "speaker": "guardian",
+              "mood": "feliz",
+              "text": "Vocês estão perto da floresta densa. Sigam para o leste e encontrarão o caminho de volta ao Reino das Frutas."
+            },
+            {
+              "speaker": "luli",
+              "mood": "feliz",
+              "text": "Obrigadaaa!"
+            },
+            {
+              "speaker": "chris",
+              "mood": "pensando",
+              "text": "Leste. Certo. Você sabe para que lado fica o leste?"
+            },
+            {
+              "speaker": "luli",
+              "mood": "seria",
+              "text": "Chris..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stage-1",
+      "name": "Torre Abandonada",
+      "tag": "Estamos indo para o lugar certo",
+      "width": 2740,
+      "height": 540,
+      "theme": 0,
+      "entities": [
+        {
+          "id": "e101",
+          "kind": "ground",
+          "x": 0,
+          "y": 462,
+          "width": 384
+        },
+        {
+          "id": "e103",
+          "kind": "ground",
+          "x": 1760,
+          "y": 462,
+          "width": 640
+        },
+        {
+          "id": "e104",
+          "kind": "platform",
+          "x": 416,
+          "y": 416,
+          "width": 150
+        },
+        {
+          "id": "e105",
+          "kind": "platform",
+          "x": 672,
+          "y": 352,
+          "width": 224
+        },
+        {
+          "id": "e106",
+          "kind": "platform",
+          "x": 1050,
+          "y": 365,
+          "width": 170
+        },
+        {
+          "id": "e107",
+          "kind": "platform",
+          "x": 1280,
+          "y": 352,
+          "width": 288
+        },
+        {
+          "id": "e108",
+          "kind": "platform",
+          "x": 2368,
+          "y": 352,
+          "width": 160
+        },
+        {
+          "id": "e109",
+          "kind": "platform",
+          "x": 2560,
+          "y": 256,
+          "width": 160
+        },
+        {
+          "id": "e110",
+          "kind": "npc",
+          "x": 235,
+          "y": 462,
+          "customName": "",
+          "spriteId": "",
+          "type": "guardian",
+          "heal": false,
+          "healAmount": 1,
+          "dialogue": [
+            {
+              "speaker": "guardian",
+              "mood": "dica",
+              "text": "Luli, Chris, sigam em frente pela torre. Estão no caminho certo!"
+            },
+            {
+              "speaker": "chris",
+              "mood": "feliz",
+              "text": "Obrigado!"
+            }
+          ]
+        },
+        {
+          "id": "e112",
+          "kind": "npc",
+          "x": 2048,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "apple",
+          "heal": false,
+          "healAmount": 1,
+          "dialogue": [
+            {
+              "speaker": "apple",
+              "mood": "feliz",
+              "text": "Olá! Sou a Maçã Sábia. Continuem seguindo em frente e vocês encontrarão o caminho de casa."
+            },
+            {
+              "speaker": "chris",
+              "mood": "agradecido",
+              "text": "Obrigado, dona Maçã!"
+            },
+            {
+              "speaker": "luli",
+              "mood": "pensando",
+              "text": "Amor, a gente acabou de pedir informação para uma maçã."
+            },
+            {
+              "speaker": "chris",
+              "mood": "sorrindo",
+              "text": "E foi a melhor informação que recebemos até agora."
+            }
+          ]
+        },
+        {
+          "id": "e113",
+          "kind": "enemy",
+          "x": 768,
+          "y": 352,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 52,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e116",
+          "kind": "enemy",
+          "x": 1408,
+          "y": 352,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 52,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e117",
+          "kind": "fruit",
+          "x": 300,
+          "y": 365,
+          "value": 1
+        },
+        {
+          "id": "e118",
+          "kind": "fruit",
+          "x": 480,
+          "y": 384,
+          "value": 1
+        },
+        {
+          "id": "e119",
+          "kind": "fruit",
+          "x": 768,
+          "y": 256,
+          "value": 1
+        },
+        {
+          "id": "e120",
+          "kind": "fruit",
+          "x": 1120,
+          "y": 256,
+          "value": 1
+        },
+        {
+          "id": "e121",
+          "kind": "fruit",
+          "x": 1440,
+          "y": 256,
+          "value": 1
+        },
+        {
+          "id": "e122",
+          "kind": "fruit",
+          "x": 1760,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e123",
+          "kind": "fruit",
+          "x": 1984,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e124",
+          "kind": "fruit",
+          "x": 2240,
+          "y": 384,
+          "value": 1
+        },
+        {
+          "id": "e125",
+          "kind": "fruit",
+          "x": 2464,
+          "y": 320,
+          "value": 1
+        },
+        {
+          "id": "e126",
+          "kind": "fruit",
+          "x": 1152,
+          "y": 448,
+          "value": 1
+        },
+        {
+          "id": "e127",
+          "kind": "event",
+          "x": 416,
+          "y": 320,
+          "width": 150,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Cuidado com as criaturas! Pule sobre elas.",
+          "once": true,
+          "dialogue": []
+        },
+        {
+          "id": "e129",
+          "kind": "gate",
+          "x": 2624,
+          "y": 256,
+          "requiresBoss": false
+        },
+        {
+          "id": "e130",
+          "kind": "spawn",
+          "x": 96,
+          "y": 462
+        },
+        {
+          "id": "e-a6118aba-79ec-4d4c-9751-42082f666821",
+          "kind": "enemy",
+          "x": 2272,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 52,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-c37f54c0-b243-4244-8b20-e4503cffcf1b",
+          "kind": "solid",
+          "x": 992,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1a92ec36-eabd-478b-ab93-ad6797edabfe",
+          "kind": "solid",
+          "x": 992,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-13936ac5-2fcb-450b-99bd-47304ed8ec97",
+          "kind": "solid",
+          "x": 992,
+          "y": 320,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-3c83771e-92c1-47b5-a2bf-65e6314275a4",
+          "kind": "solid",
+          "x": 1024,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8408df0f-d4c1-476e-996f-1fd2019256ea",
+          "kind": "solid",
+          "x": 992,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-41825328-fede-4f8d-ad75-d4e4c704f364",
+          "kind": "solid",
+          "x": 992,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-4f4e7c2e-e3b1-4526-b2cf-f53d22169da3",
+          "kind": "solid",
+          "x": 1216,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-6016a8f9-1b8d-41d2-9fd1-05eedb9a83dc",
+          "kind": "solid",
+          "x": 1248,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d0bcfdfa-803b-4b0f-80ed-f98885ec77f8",
+          "kind": "solid",
+          "x": 1248,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-e42c5085-64a2-45f1-9562-d52cdb5a28c9",
+          "kind": "solid",
+          "x": 1248,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-89002ddd-81d4-4945-ade8-00e7a387f429",
+          "kind": "solid",
+          "x": 1248,
+          "y": 320,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-6b96fef6-c364-4492-9375-73c31b28fe9e",
+          "kind": "solid",
+          "x": 1248,
+          "y": 384,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-064532e5-763f-4671-b5a0-3c3ed22f4a5b",
+          "kind": "solid",
+          "x": 1248,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8365a146-678d-4605-bbac-f9c30632a565",
+          "kind": "solid",
+          "x": 1248,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-296a6c0b-7b01-40d7-803d-120676fb3bb9",
+          "kind": "solid",
+          "x": 1248,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-a34592ef-1f08-4118-9eb6-711224eb7108",
+          "kind": "solid",
+          "x": 1216,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9b53d5d8-55e1-46f3-989c-a347657e93e6",
+          "kind": "solid",
+          "x": 1184,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-4cbacb9f-974b-4f39-9dcc-e008fa945939",
+          "kind": "solid",
+          "x": 1152,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1e22b6f7-0a8d-48ab-b10f-201cd46745d4",
+          "kind": "solid",
+          "x": 1120,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-ef748c02-13fe-4f98-9fe8-b78561965908",
+          "kind": "solid",
+          "x": 1088,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0ae04cb0-233a-4896-8100-ae638673dda6",
+          "kind": "solid",
+          "x": 1056,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-859c8237-ed78-4941-93d7-bac0f4740d2f",
+          "kind": "solid",
+          "x": 1024,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5ee20329-8963-448b-9b42-d41ee90560dd",
+          "kind": "solid",
+          "x": 960,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-93754a11-f20a-4ba9-9440-4464465ba580",
+          "kind": "solid",
+          "x": 928,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9a11af8c-2f5c-4d5f-a379-b8ec6413abfe",
+          "kind": "solid",
+          "x": 992,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-fee480f4-7c55-4024-8c0f-19768de41009",
+          "kind": "solid",
+          "x": 992,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7db80245-1dbc-4dc5-8b8b-a00546b8c586",
+          "kind": "solid",
+          "x": 1280,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f9c32e9a-4127-45ca-90e2-871016c52464",
+          "kind": "solid",
+          "x": 1312,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-dd77c918-d78c-4fe0-8d0a-5e68d151a707",
+          "kind": "solid",
+          "x": 992,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b2651bf1-0b36-470f-9eee-9092ca514158",
+          "kind": "solid",
+          "x": 992,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9ac10d9c-6be6-4db1-8870-95bf7cddf28c",
+          "kind": "solid",
+          "x": 992,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5d483a94-e566-4e2c-b275-09e4e4ef49fe",
+          "kind": "solid",
+          "x": 1248,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7cad3b65-4b36-494f-be53-4e599fd4e8a7",
+          "kind": "solid",
+          "x": 992,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-36cf6419-e8c8-43ea-a647-1597ed125f66",
+          "kind": "solid",
+          "x": 1248,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5fe4faed-613a-4107-9dc4-cdac01c35b63",
+          "kind": "solid",
+          "x": 1216,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-6675d1f0-c033-453f-abff-b3f67f110507",
+          "kind": "solid",
+          "x": 1184,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-471fd4fd-97ae-4d06-94b2-505f41562b76",
+          "kind": "solid",
+          "x": 1152,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d57bc105-265f-4cf9-91bd-aea4de631b9b",
+          "kind": "solid",
+          "x": 1120,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f0a79660-5afa-4116-82e8-99b6af3a5c00",
+          "kind": "solid",
+          "x": 1088,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-37ee05d9-16c9-4660-9713-e562dd1e8447",
+          "kind": "solid",
+          "x": 1056,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-e96dc1a6-3c8d-4539-8d17-646cddae486c",
+          "kind": "solid",
+          "x": 1024,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5035ad7f-0c05-4aa5-a0ba-95b095c127a2",
+          "kind": "solid",
+          "x": 992,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-941c6251-255a-4fc8-b1de-58c7b50e61bd",
+          "kind": "solid",
+          "x": 1056,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0b85189f-93cd-494f-b24f-a899c2d65662",
+          "kind": "solid",
+          "x": 1120,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5bcaa526-b6fa-4605-aa5f-7d4a0ddab428",
+          "kind": "solid",
+          "x": 1184,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-104ae1be-9fb1-42db-858c-8be030af934e",
+          "kind": "solid",
+          "x": 1248,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-26640577-54df-4cc3-8a64-1f903b3f88f4",
+          "kind": "solid",
+          "x": 1312,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-05f6232f-d0bb-4c13-8bdb-e864c4181585",
+          "kind": "solid",
+          "x": 896,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-14529f6f-14f7-4f6b-a5a7-38b6b9dedd0d",
+          "kind": "solid",
+          "x": 896,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9581c3e1-ee18-47c1-83f6-739fc814313e",
+          "kind": "event",
+          "x": 1056,
+          "y": 384,
+          "width": 150,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Pule para subir na plataforma.",
+          "once": false,
+          "dialogue": []
+        },
+        {
+          "id": "foundation-cp-2-1",
+          "kind": "checkpoint",
+          "x": 1970,
+          "y": 462
+        }
+      ]
+    },
+    {
+      "id": "stage-3",
+      "name": "Porta para Casa",
+      "tag": "O caminho de volta",
+      "width": 1200,
+      "height": 540,
+      "theme": 1,
+      "entities": [
+        {
+          "id": "e168",
+          "kind": "ground",
+          "x": 0,
+          "y": 462,
+          "width": 1184
+        },
+        {
+          "id": "e203",
+          "kind": "event",
+          "x": 288,
+          "y": 320,
+          "width": 150,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Q / Dupla: toque para alternar; segure para deixar o parceiro esperando. Toque novamente para chamá-lo.",
+          "once": false,
+          "dialogue": []
+        },
+        {
+          "id": "e206",
+          "kind": "spawn",
+          "x": 96,
+          "y": 462
+        },
+        {
+          "id": "e-c512bb80-7635-4cfe-9efa-911df1dd66f1",
+          "kind": "door",
+          "x": 576,
+          "y": 256,
+          "width": 32,
+          "height": 212,
+          "channel": "A"
+        },
+        {
+          "id": "e-24ed4ebd-40d7-4895-84a0-b31c84d90f5e",
+          "kind": "solid",
+          "x": 576,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-44655086-8833-43d8-9784-b9767627f060",
+          "kind": "solid",
+          "x": 576,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1cb066a5-2481-42b6-a265-075c1185d283",
+          "kind": "solid",
+          "x": 576,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b3779238-e73e-4504-bdd1-7a4e55dd5df4",
+          "kind": "solid",
+          "x": 576,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-c7307ca3-b1c9-4c69-82c5-75db4b92f3e9",
+          "kind": "solid",
+          "x": 576,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-975aea9c-daf7-45d0-9687-2dbd05e18a33",
+          "kind": "solid",
+          "x": 576,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8b817972-6a88-4901-9bb0-3e7083e659e1",
+          "kind": "solid",
+          "x": 576,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-08cdbf12-34ef-4bbf-873a-1d540d3c6e3c",
+          "kind": "solid",
+          "x": 576,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8cf06c25-dbad-47c5-aa72-711151aa2687",
+          "kind": "plate",
+          "x": 320,
+          "y": 448,
+          "width": 64,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-84f1d8cc-1736-4117-be1a-0119dca31d06",
+          "kind": "gate",
+          "x": 1056,
+          "y": 462,
+          "requiresBoss": false
+        },
+        {
+          "id": "e-195f3dbe-fdae-4594-952b-4abb9a8c35f6",
+          "kind": "enemy",
+          "x": 832,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "e207",
+      "name": "Pensando Juntos",
+      "tag": "Duas mentes, um coração",
+      "width": 2100,
+      "height": 540,
+      "theme": 1,
+      "entities": [
+        {
+          "id": "e208",
+          "kind": "ground",
+          "x": 0,
+          "y": 462,
+          "width": 2100
+        },
+        {
+          "id": "e209",
+          "kind": "spawn",
+          "x": 32,
+          "y": 416
+        },
+        {
+          "id": "e210",
+          "kind": "gate",
+          "x": 1920,
+          "y": 256,
+          "requiresBoss": false
+        },
+        {
+          "id": "e-b71b9169-4576-4288-87d0-b118e86eac6b",
+          "kind": "solid",
+          "x": 448,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f49807fb-2c10-411a-9b14-d935486bac40",
+          "kind": "crate",
+          "x": 480,
+          "y": 384,
+          "width": 64,
+          "height": 64,
+          "channel": "A"
+        },
+        {
+          "id": "e-beecc6b7-cc3d-43fd-8a39-5b692143bee8",
+          "kind": "solid",
+          "x": 448,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-10bd0248-8bfa-4609-b235-449dc2503dc7",
+          "kind": "door",
+          "x": 1184,
+          "y": 288,
+          "width": 32,
+          "height": 192,
+          "channel": "A"
+        },
+        {
+          "id": "e-5a35ddf4-1b5b-4e23-a27c-8add6b00fabb",
+          "kind": "solid",
+          "x": 1184,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9447d1a1-bc1a-4121-abee-0b1256f7e007",
+          "kind": "solid",
+          "x": 1152,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-620a4542-11a0-4a9c-ae3b-96101498acb7",
+          "kind": "solid",
+          "x": 1120,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-cbd66818-f7d2-4934-9e3b-2ef76dedbdb6",
+          "kind": "solid",
+          "x": 1216,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-10069c3d-6e9a-4f4c-a93c-91f7d84aa51f",
+          "kind": "solid",
+          "x": 1248,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f85af514-9236-49d4-b72e-608f5ad910e8",
+          "kind": "solid",
+          "x": 1120,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-fb6f54b2-8a12-40bd-b1a9-dc92452d2056",
+          "kind": "solid",
+          "x": 1184,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f8739eb7-2af5-4f0f-af3e-d263422eed92",
+          "kind": "solid",
+          "x": 1248,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-2a8b9786-f7f3-4218-9cdc-9798644548e1",
+          "kind": "plate",
+          "x": 928,
+          "y": 450,
+          "width": 64,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-f1cdc7eb-da7e-459e-aa3d-e29d46832a81",
+          "kind": "plate",
+          "x": 800,
+          "y": 450,
+          "width": 64,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-bdf13673-2bdc-42d5-8e41-5bf067382074",
+          "kind": "solid",
+          "x": 1120,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-39304011-73e5-42cc-8dca-41f1327069c6",
+          "kind": "solid",
+          "x": 1248,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-2e90569a-840d-4182-90cd-d393a05ca933",
+          "kind": "solid",
+          "x": 1184,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-945b8687-e2c0-4a10-b9cd-1bb626cb72ff",
+          "kind": "solid",
+          "x": 1152,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-fcccdb99-577c-496c-8606-38e6aacac2b3",
+          "kind": "solid",
+          "x": 1216,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-31951956-4197-479d-8183-78d93d533a54",
+          "kind": "event",
+          "x": 832,
+          "y": 352,
+          "width": 128,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Chris pode empurrar a caixa sobre uma placa. Deixe o companheiro na outra.",
+          "once": false,
+          "dialogue": []
+        },
+        {
+          "id": "e-7d7a54ec-646f-434c-a9f2-a8af0dd852cb",
+          "kind": "solid",
+          "x": 1920,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-597bd417-9b67-4ab5-8518-353e22049faf",
+          "kind": "solid",
+          "x": 1888,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-45e21784-dd43-43b1-91f2-c12ccd3a20ea",
+          "kind": "solid",
+          "x": 1888,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b3d7d06c-faec-4301-9f85-b357504fe6e1",
+          "kind": "solid",
+          "x": 1856,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0c520bc7-5ccf-4980-94cc-ecde1bb31a5d",
+          "kind": "solid",
+          "x": 1824,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d1b89e62-ab49-44da-959b-b83f18f91b76",
+          "kind": "solid",
+          "x": 1824,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-99667ede-f53f-4808-bf47-1eed81b3e734",
+          "kind": "solid",
+          "x": 1952,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-da645b08-da8f-4fcf-bb3b-15301dfde0e7",
+          "kind": "solid",
+          "x": 1952,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-420113c7-72a3-4f47-980f-e38eb2d02a71",
+          "kind": "event",
+          "x": 1632,
+          "y": 352,
+          "width": 128,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Luli consegue alcançar o portal com o salto duplo. Pule outra vez no ar!",
+          "once": false,
+          "dialogue": []
+        },
+        {
+          "id": "e-95444483-8505-46df-b5f8-8d57aeb3fbd3",
+          "kind": "enemy",
+          "x": 1632,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "lemon",
+          "hp": 1,
+          "ai": {
+            "mode": "chase",
+            "speed": 90,
+            "range": 90,
+            "aggro": 240,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "foundation-cp-4-1",
+          "kind": "checkpoint",
+          "x": 1300,
+          "y": 462
+        }
+      ]
+    },
+    {
+      "id": "e217",
+      "name": "Anoitecendo",
+      "tag": "Cuidado, amor!",
+      "width": 2100,
+      "height": 540,
+      "theme": 1,
+      "entities": [
+        {
+          "id": "e218",
+          "kind": "ground",
+          "x": 0,
+          "y": 462,
+          "width": 1056
+        },
+        {
+          "id": "e219",
+          "kind": "spawn",
+          "x": 96,
+          "y": 448
+        },
+        {
+          "id": "e220",
+          "kind": "gate",
+          "x": 1952,
+          "y": 256,
+          "requiresBoss": false
+        },
+        {
+          "id": "e-57a83f4f-e7fd-4f39-b14a-bc4afb154ce8",
+          "kind": "solid",
+          "x": 0,
+          "y": 448,
+          "width": 896,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-11f0ba6f-d76d-4e30-a83b-e532635a29e3",
+          "kind": "door",
+          "x": 864,
+          "y": 64,
+          "width": 32,
+          "height": 400,
+          "channel": "A"
+        },
+        {
+          "id": "e-6d10e034-2af8-43f5-98c1-57aa46cfca02",
+          "kind": "plate",
+          "x": 736,
+          "y": 448,
+          "width": 64,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-bac3877d-b87a-4509-89b6-5b0c1d0e44be",
+          "kind": "platform",
+          "x": 1088,
+          "y": 352,
+          "width": 224
+        },
+        {
+          "id": "e-cf9442fa-fa29-4f18-97e7-9841552fc02a",
+          "kind": "enemy",
+          "x": 1184,
+          "y": 352,
+          "customName": "",
+          "spriteId": "",
+          "type": "pepper",
+          "hp": 1,
+          "ai": {
+            "mode": "jump",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-485c6b0c-dc2e-4dcc-9c87-b4c3fb4e5851",
+          "kind": "platform",
+          "x": 1600,
+          "y": 256,
+          "width": 384
+        },
+        {
+          "id": "e-1c9d1e1c-1d46-4c19-8b6c-e82345486f1c",
+          "kind": "enemy",
+          "x": 1760,
+          "y": 256,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-23c9cc0a-c52c-44f8-989d-b1bc45b96d8b",
+          "kind": "enemy",
+          "x": 480,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-edfb2753-2e9a-49b6-9536-fda5cad4fda9",
+          "kind": "enemy",
+          "x": 672,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "plum",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-56ee7924-67db-43b6-b536-01ec11027789",
+          "kind": "fruit",
+          "x": 960,
+          "y": 416,
+          "value": 1
+        },
+        {
+          "id": "e-ad5d6dec-e44d-4cef-9877-efc56862b4ee",
+          "kind": "fruit",
+          "x": 1184,
+          "y": 256,
+          "value": 1
+        },
+        {
+          "id": "e-3b19f5c8-e69c-4db6-8b23-477031266989",
+          "kind": "fruit",
+          "x": 1696,
+          "y": 192,
+          "value": 1
+        },
+        {
+          "id": "e-90148643-61df-4acc-9c98-0e24f4d6a0fe",
+          "kind": "fruit",
+          "x": 480,
+          "y": 320,
+          "value": 1
+        },
+        {
+          "id": "e-03766489-0441-4e24-a32c-f9ca0083f4e9",
+          "kind": "fruit",
+          "x": 672,
+          "y": 320,
+          "value": 1
+        },
+        {
+          "id": "foundation-cp-5-1",
+          "kind": "checkpoint",
+          "x": 1190,
+          "y": 352
+        }
+      ]
+    },
+    {
+      "id": "e-46c7f4f2-c3fb-4e37-ace8-cea0c6007231",
+      "name": "Que Lugar Maluco!",
+      "tag": "Placas, portas e caixas",
+      "width": 2120,
+      "height": 540,
+      "theme": 2,
+      "entities": [
+        {
+          "id": "e-c5aea59d-3f60-47dc-8985-bb587b6c063a",
+          "kind": "ground",
+          "x": 0,
+          "y": 462,
+          "width": 2120
+        },
+        {
+          "id": "e-b3a6f2bd-86f7-4092-a8d6-9e314c61a9be",
+          "kind": "spawn",
+          "x": 160,
+          "y": 448
+        },
+        {
+          "id": "e-d711c900-acbb-4e48-af82-ea509469c30f",
+          "kind": "plate",
+          "x": 320,
+          "y": 450,
+          "width": 96,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-0298cfe1-426e-47e6-a595-3b870cdb80c4",
+          "kind": "door",
+          "x": 650,
+          "y": 0,
+          "width": 32,
+          "height": 462,
+          "channel": "A"
+        },
+        {
+          "id": "e-9db1156c-7331-4b81-ae6f-434442974e82",
+          "kind": "crate",
+          "x": 940,
+          "y": 398,
+          "width": 64,
+          "height": 64,
+          "channel": "A"
+        },
+        {
+          "id": "e-0d6798f2-0d79-4a26-8361-0e47a616d125",
+          "kind": "plate",
+          "x": 1120,
+          "y": 450,
+          "width": 112,
+          "height": 12,
+          "channel": "B"
+        },
+        {
+          "id": "e-2d70cc15-1106-452a-a7a4-e6dde3fc3ba9",
+          "kind": "door",
+          "x": 1376,
+          "y": 256,
+          "width": 32,
+          "height": 200,
+          "channel": "B"
+        },
+        {
+          "id": "e-ce09b07f-34a2-4fe3-9709-8da7e2b72a89",
+          "kind": "platform",
+          "x": 1728,
+          "y": 192,
+          "width": 160
+        },
+        {
+          "id": "e-4e2df7ff-43ed-4ee1-aa11-dfccde0defa7",
+          "kind": "fruit",
+          "x": 1376,
+          "y": 192,
+          "value": 1
+        },
+        {
+          "id": "e-d78ae122-8b4f-4ed4-b2bb-e3a0edcffc68",
+          "kind": "gate",
+          "x": 1856,
+          "y": 128,
+          "requiresBoss": false
+        },
+        {
+          "id": "e-24f1a37f-0923-49f1-97ca-f01dfdcf22f9",
+          "kind": "event",
+          "x": 288,
+          "y": 352,
+          "width": 170,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Toque em Q/Dupla para trocar. Segure para deixar o parceiro esperando.",
+          "once": true,
+          "dialogue": []
+        },
+        {
+          "id": "e-f84c566b-4c6f-4e31-b606-612ac78bda89",
+          "kind": "event",
+          "x": 1600,
+          "y": 352,
+          "width": 100,
+          "trigger": "enter",
+          "action": "toast",
+          "message": "Use o salto duplo da Luli para pegar a fruta elevada.",
+          "once": true,
+          "dialogue": []
+        },
+        {
+          "id": "e-d701dcb0-4c1b-4a28-9e5b-059a0d13c524",
+          "kind": "solid",
+          "x": 1376,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-6a003c92-ee93-47be-a554-fb6c8662bd59",
+          "kind": "solid",
+          "x": 1344,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f565aa28-0b27-4208-9348-119e47e0650e",
+          "kind": "solid",
+          "x": 1312,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b427b210-0e8e-4fd6-a963-9cb9f47794ed",
+          "kind": "solid",
+          "x": 1280,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-562e178e-ed08-43e2-aaa8-6d9b7d3cabc2",
+          "kind": "solid",
+          "x": 1248,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-cec1673c-35fc-4833-aa95-cb07834a1a01",
+          "kind": "solid",
+          "x": 1216,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-318f67b1-c07d-4cc7-a6d1-8541c91d445f",
+          "kind": "solid",
+          "x": 1184,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-bd24319c-9bff-4736-ac2d-afe6de4e412e",
+          "kind": "solid",
+          "x": 1152,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-e3c182af-5ec8-45b9-a3af-e1bcdca306e3",
+          "kind": "solid",
+          "x": 1120,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1b371e8d-0f51-40d8-b90e-e8ebba2bd6f1",
+          "kind": "solid",
+          "x": 1088,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-c9ce7778-7814-4478-81c2-5d26fdf5ddc8",
+          "kind": "solid",
+          "x": 1088,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9d2cfa82-95f4-498b-b2e2-f7baa57cbb67",
+          "kind": "solid",
+          "x": 1088,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d47fc1ef-f464-4af3-9136-87b5702dc20d",
+          "kind": "solid",
+          "x": 1088,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9372ded2-4b14-4210-baf9-3c2a7237b036",
+          "kind": "solid",
+          "x": 1472,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-757edde9-0fc9-4961-b47c-7560976883b8",
+          "kind": "solid",
+          "x": 1472,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0e8bfd42-1cce-43a6-999b-4a1c4c732d57",
+          "kind": "solid",
+          "x": 1472,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-aeef5bdf-9ad6-486c-8a27-378ce221c9ca",
+          "kind": "solid",
+          "x": 1472,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b33b9e88-bda8-46c4-8601-69cc120a85e9",
+          "kind": "solid",
+          "x": 1440,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5c9a09f8-3073-44bf-b79a-d48397510493",
+          "kind": "solid",
+          "x": 1504,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-28161c64-2522-4baf-8a79-04bf861abb53",
+          "kind": "solid",
+          "x": 1536,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1a9260bc-2645-4d01-b13c-63aa69beff50",
+          "kind": "solid",
+          "x": 1536,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-84c3045d-5099-4c08-8424-25f36c0cc5d1",
+          "kind": "solid",
+          "x": 1408,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b08afd3e-3e7e-4041-9a54-4ac0c8704399",
+          "kind": "solid",
+          "x": 1408,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f51d8965-6ae5-4711-aa45-945ef61fba74",
+          "kind": "solid",
+          "x": 1376,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-ade29de8-05bf-46d5-9b8e-31431b997876",
+          "kind": "solid",
+          "x": 1344,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d02f679f-fd6d-48bf-915f-2833639b6a4d",
+          "kind": "solid",
+          "x": 1312,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8f3182b3-17de-46dd-94d4-e8da317fcdcf",
+          "kind": "solid",
+          "x": 1280,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-c277889e-8add-47a9-98ac-b2df041e46c5",
+          "kind": "solid",
+          "x": 1248,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8162eadd-e14e-4715-9280-ca18169ffc55",
+          "kind": "solid",
+          "x": 1216,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d60fc58a-508d-4091-9303-27d2f0d4d772",
+          "kind": "solid",
+          "x": 1184,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-ca7d1ec3-13f6-451d-95e3-09033206e87e",
+          "kind": "solid",
+          "x": 1152,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-71c56450-68f8-466c-bedb-cce84fb787d0",
+          "kind": "solid",
+          "x": 1120,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-25a9fb5b-438a-4ec8-9aef-8dd5fd42e410",
+          "kind": "solid",
+          "x": 1088,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9da3e4fb-bfa6-4b10-84c8-9391b69e7e98",
+          "kind": "solid",
+          "x": 1824,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-373d785a-e8cc-445e-99e2-1d53affff762",
+          "kind": "solid",
+          "x": 1856,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b706d94b-f4ef-4bc9-b032-849e0d417daa",
+          "kind": "solid",
+          "x": 1792,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-f30e467d-d34d-4feb-8d8d-58c4be80f07a",
+          "kind": "solid",
+          "x": 1888,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-536da8d7-05f0-435b-800a-50e24ef0f5e3",
+          "kind": "enemy",
+          "x": 1760,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "lemon",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 80,
+            "range": 200,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-4a6df70a-1a17-45a3-bcd7-630ba220930a",
+          "kind": "enemy",
+          "x": 1248,
+          "y": 224,
+          "customName": "",
+          "spriteId": "",
+          "type": "lemon",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 80,
+            "range": 200,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-de8dfe21-9fc1-4bcb-b315-1106997d22ca",
+          "kind": "enemy",
+          "x": 1184,
+          "y": 448,
+          "customName": "",
+          "spriteId": "",
+          "type": "pepper",
+          "hp": 1,
+          "ai": {
+            "mode": "patrol",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-34882da1-5f42-46c9-abe4-6bd1e74ff823",
+          "kind": "fruit",
+          "x": 384,
+          "y": 416,
+          "value": 1
+        },
+        {
+          "id": "e-77f217ec-3e84-4cab-b374-0b78b3739def",
+          "kind": "fruit",
+          "x": 960,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e-15f7b155-e650-4a7e-87b1-98b63bec48fd",
+          "kind": "fruit",
+          "x": 1664,
+          "y": 256,
+          "value": 1
+        },
+        {
+          "id": "foundation-cp-6-1",
+          "kind": "checkpoint",
+          "x": 735,
+          "y": 462
+        },
+        {
+          "id": "foundation-cp-6-2",
+          "kind": "checkpoint",
+          "x": 1555,
+          "y": 462
+        }
+      ]
+    },
+    {
+      "id": "e-9b1be126-f201-48ca-964e-8c77983d5ae4",
+      "name": "E Agora?",
+      "tag": "Tente empurrar a caixa",
+      "width": 1300,
+      "height": 800,
+      "theme": 2,
+      "entities": [
+        {
+          "id": "e-08dd6d2c-b660-4a62-b6d1-83d31298637a",
+          "kind": "ground",
+          "x": 0,
+          "y": 722,
+          "width": 544
+        },
+        {
+          "id": "e-a9998484-ecbc-455b-a1c6-c06f1de5a767",
+          "kind": "platform",
+          "x": 224,
+          "y": 416,
+          "width": 160
+        },
+        {
+          "id": "e-eaeeb28f-e71f-4a83-8b41-8e999682494e",
+          "kind": "solid",
+          "x": 0,
+          "y": 128,
+          "width": 128,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7adcc2fe-936c-44e3-a1ab-0c94453e4227",
+          "kind": "solid",
+          "x": 0,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-553d69fb-6e3c-42b1-ae32-d5996e3eb1cc",
+          "kind": "solid",
+          "x": 32,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-df0cb8a0-536f-45ca-b50d-a0803b70d116",
+          "kind": "solid",
+          "x": 64,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-818c8508-aa8d-4f53-b72e-83e85981944c",
+          "kind": "solid",
+          "x": 96,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-83dc281e-7fe2-4375-a003-606cd37f2d88",
+          "kind": "spawn",
+          "x": 32,
+          "y": 704
+        },
+        {
+          "id": "e-b9648d01-043a-4458-aeb1-6bdad8ab3639",
+          "kind": "solid",
+          "x": 736,
+          "y": 512,
+          "width": 564,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b7837162-7a5f-466e-8d04-df811d907985",
+          "kind": "platform",
+          "x": 352,
+          "y": 224,
+          "width": 256
+        },
+        {
+          "id": "e-9e9f0785-a93f-471b-ae62-8fcc645aa2ea",
+          "kind": "plate",
+          "x": 32,
+          "y": 128,
+          "width": 64,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-ff5a1e7a-28e3-450a-8869-0eb93e629ab2",
+          "kind": "fruit",
+          "x": 768,
+          "y": 480,
+          "value": 1
+        },
+        {
+          "id": "e-9c26e116-d80e-4eaf-ba6d-122e600f896f",
+          "kind": "fruit",
+          "x": 544,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e-91a0c0fe-fe14-449f-a6ae-a77e98d211a3",
+          "kind": "fruit",
+          "x": 320,
+          "y": 352,
+          "value": 1
+        },
+        {
+          "id": "e-1c24b464-af5b-4f83-a875-a556ca19b105",
+          "kind": "fruit",
+          "x": 96,
+          "y": 288,
+          "value": 1
+        },
+        {
+          "id": "e-6ae40224-afdc-4c3a-9733-6700497019ac",
+          "kind": "fruit",
+          "x": 544,
+          "y": 128,
+          "value": 1
+        },
+        {
+          "id": "e-c77516dd-e073-4398-9ed1-864ca6ffbd65",
+          "kind": "fruit",
+          "x": 64,
+          "y": 96,
+          "value": 1
+        },
+        {
+          "id": "e-5e78e71f-5d54-4937-bb80-31b824180965",
+          "kind": "door",
+          "x": 928,
+          "y": 0,
+          "width": 32,
+          "height": 700,
+          "channel": "A"
+        },
+        {
+          "id": "e-762508f0-5596-4cb8-b6fc-4498af448b34",
+          "kind": "plate",
+          "x": 416,
+          "y": 710,
+          "width": 64,
+          "height": 12,
+          "channel": "A"
+        },
+        {
+          "id": "e-9b7261ae-f6da-4f7f-a541-c49b5e156e40",
+          "kind": "crate",
+          "x": 480,
+          "y": 128,
+          "width": 96,
+          "height": 71,
+          "channel": "A"
+        },
+        {
+          "id": "e-9e6aa4e2-3497-410d-8918-0325f0ce1277",
+          "kind": "enemy",
+          "x": 224,
+          "y": 352,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-0f8ac3a9-dea1-49ed-805b-b592f4e16164",
+          "kind": "enemy",
+          "x": 1120,
+          "y": 352,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-98aec674-3789-45fb-bb60-a066c0e6fc8a",
+          "kind": "enemy",
+          "x": 832,
+          "y": 352,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-7a7a84d0-2cba-4a18-abdc-56356c6896d4",
+          "kind": "enemy",
+          "x": 672,
+          "y": 96,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-d4beace5-31a3-43be-aa7a-5a5d08481e95",
+          "kind": "gate",
+          "x": 1216,
+          "y": 416,
+          "requiresBoss": false
+        },
+        {
+          "id": "e-9cd0208b-218a-4a73-9aea-b64c0196e4d0",
+          "kind": "solid",
+          "x": 928,
+          "y": 384,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-68bb01cf-522d-4120-8fe7-92d53202b38b",
+          "kind": "solid",
+          "x": 928,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-92bcfe16-0661-46aa-bbd8-4e406acf8229",
+          "kind": "solid",
+          "x": 928,
+          "y": 320,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1040dc9c-df30-4ec7-8177-fe4e04b8b5ab",
+          "kind": "solid",
+          "x": 928,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-649def37-bdc2-4d4d-a411-fbf26f4846fb",
+          "kind": "solid",
+          "x": 928,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8b1aff74-2bdc-4a15-a8ad-e04aa19ae775",
+          "kind": "solid",
+          "x": 928,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8efa8a40-5842-4d14-bb6f-b37e9ecf57aa",
+          "kind": "solid",
+          "x": 928,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1a65d9f2-5109-429e-9812-cc34eb0e40e1",
+          "kind": "solid",
+          "x": 928,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b1f6be17-a7d4-4ee0-89f7-bfbb3f5494ab",
+          "kind": "solid",
+          "x": 928,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-a2ea4392-b6c6-4bb8-a482-6c7cbfc7b433",
+          "kind": "solid",
+          "x": 928,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-3f60968a-4543-4840-87aa-b34b7dcd77d6",
+          "kind": "solid",
+          "x": 928,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-c7733e25-8299-4485-a9d4-0dcd341d26b2",
+          "kind": "solid",
+          "x": 928,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-2a933b51-dbbb-4d63-ad5e-c0c1df66d298",
+          "kind": "solid",
+          "x": 928,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7293c924-d6c6-4d3a-baf2-bee71747344b",
+          "kind": "solid",
+          "x": 960,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-488b063b-4cb2-46b6-b10b-aa3da73ea6f7",
+          "kind": "solid",
+          "x": 992,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0cf86acb-9b50-4e5a-9818-ba2474221001",
+          "kind": "solid",
+          "x": 1024,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8ae89110-d8cd-4d22-b5b7-bfe478529c5c",
+          "kind": "solid",
+          "x": 1056,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-2557fc5d-a2e0-43a5-a63c-d2de909fba6e",
+          "kind": "solid",
+          "x": 1088,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-11a464bf-84a9-425c-8de1-59528fffd21e",
+          "kind": "solid",
+          "x": 1120,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-6caf1662-b3c6-44ac-9135-1df956ee77e6",
+          "kind": "solid",
+          "x": 1152,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b13c6713-6b3f-4da9-9f3a-44f3f94181da",
+          "kind": "solid",
+          "x": 1184,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0e5c8f68-8c40-472a-9c7b-86290f99d1b0",
+          "kind": "solid",
+          "x": 1216,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-e301a7d3-671c-4008-acfb-83e6983680ac",
+          "kind": "solid",
+          "x": 1248,
+          "y": 0,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b06b0111-acb3-4411-b3d2-e848b7705912",
+          "kind": "solid",
+          "x": 1248,
+          "y": 32,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-19dd979a-ac76-4d60-9ea8-f97467450c86",
+          "kind": "solid",
+          "x": 1248,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-051d347a-5097-42a3-8e6d-ad6267e018c3",
+          "kind": "solid",
+          "x": 1248,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7456caf2-0d92-4677-8c7a-d386efd2fd24",
+          "kind": "solid",
+          "x": 1248,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-6133374f-3ce0-4fa8-912b-1abab7c6f3f8",
+          "kind": "solid",
+          "x": 1248,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-60a85afa-505f-4586-877a-3176ed076cba",
+          "kind": "solid",
+          "x": 1248,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-732e1796-2d56-47fb-80da-e0085f7eb91e",
+          "kind": "solid",
+          "x": 1248,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-3053caba-7135-4b75-963a-b21cd2c180e3",
+          "kind": "solid",
+          "x": 1248,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-bded9933-f59b-4296-8367-4e2177749852",
+          "kind": "solid",
+          "x": 1248,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-25cbbe73-c6e5-4cfb-8a05-6ef341e325e8",
+          "kind": "solid",
+          "x": 1248,
+          "y": 320,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-bdc815fd-f4f9-4b01-b0ed-2b57d02fb53d",
+          "kind": "solid",
+          "x": 1248,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-274348fc-3539-47f5-9dd6-989495c9189e",
+          "kind": "solid",
+          "x": 1248,
+          "y": 384,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-afbb6f03-9e6b-4911-9898-f83026398007",
+          "kind": "solid",
+          "x": 1248,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-fa49bdbb-a68f-4b49-8e12-4e0f13badb7f",
+          "kind": "solid",
+          "x": 1248,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-da00f3b9-a275-480a-8207-4ef2a91d7559",
+          "kind": "solid",
+          "x": 1248,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b53341ae-5347-4d01-96b5-600ad71dc491",
+          "kind": "crate",
+          "x": 928,
+          "y": 416,
+          "width": 96,
+          "height": 91,
+          "channel": "A"
+        },
+        {
+          "id": "e-9a67ba36-4ff2-49f4-9731-3f72a0486283",
+          "kind": "enemy",
+          "x": 224,
+          "y": 704,
+          "customName": "",
+          "spriteId": "",
+          "type": "vine",
+          "hp": 1,
+          "ai": {
+            "mode": "stationary",
+            "speed": 55,
+            "range": 90,
+            "aggro": 195,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-ce1042f8-06c2-4189-a159-05c41ed17e8b",
+          "kind": "npc",
+          "x": 832,
+          "y": 512,
+          "customName": "Alejandra",
+          "spriteId": "",
+          "type": "healer",
+          "heal": true,
+          "healAmount": 1,
+          "dialogue": [
+            {
+              "speaker": "healer",
+              "mood": "surpresa",
+              "text": "Olá! Eu sou Alejandra."
+            },
+            {
+              "speaker": "chris",
+              "mood": "surpresa",
+              "text": "Alejandra? Você é humana?"
+            },
+            {
+              "speaker": "healer",
+              "mood": "surpresa",
+              "text": "NÃOO! Eu sou uma fruta!"
+            },
+            {
+              "speaker": "luli",
+              "mood": "surpresa",
+              "text": "O que você faz aqui?"
+            },
+            {
+              "speaker": "healer",
+              "mood": "feliz",
+              "text": "Estou aqui para ajudar vocês."
+            },
+            {
+              "speaker": "luli",
+              "mood": "feliz",
+              "text": "Que bom encontrar alguém amigável!"
+            },
+            {
+              "speaker": "chris",
+              "mood": "agradecido",
+              "text": "Obrigado, Alejandra. Já estávamos ficando sem ideias."
+            }
+          ]
+        },
+        {
+          "id": "e-4cb22731-6a50-436f-8f0c-0c0eb755c248",
+          "kind": "event",
+          "x": 416,
+          "y": 608,
+          "width": 128,
+          "trigger": "enter",
+          "action": "dialog",
+          "message": "",
+          "once": true,
+          "dialogue": [
+            {
+              "speaker": "luli",
+              "mood": "feliz",
+              "text": "Olha, uma fruta menina!"
+            },
+            {
+              "speaker": "chris",
+              "mood": "surpresa",
+              "text": "Ela parece ser do bem."
+            }
+          ]
+        },
+        {
+          "id": "foundation-cp-7-1",
+          "kind": "checkpoint",
+          "x": 390,
+          "y": 224
+        },
+        {
+          "id": "foundation-cp-7-2",
+          "kind": "checkpoint",
+          "x": 785,
+          "y": 512
+        }
+      ]
+    },
+    {
+      "id": "e-64f99142-36bd-4a82-b214-3b69ae162738",
+      "name": "Encontramos uma Abóbora!",
+      "tag": "O último obstáculo",
+      "width": 1000,
+      "height": 1000,
+      "theme": 2,
+      "entities": [
+        {
+          "id": "e-ae4d5328-3fd2-4cf6-8578-afc6c5b42754",
+          "kind": "ground",
+          "x": 0,
+          "y": 922,
+          "width": 672
+        },
+        {
+          "id": "e-aa572780-3961-4845-b6a7-b4c2f3d304b7",
+          "kind": "solid",
+          "x": 0,
+          "y": 128,
+          "width": 288,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-afbac018-8bec-4ca6-9912-7debb2082687",
+          "kind": "solid",
+          "x": 256,
+          "y": 96,
+          "width": 192,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-dfec2cad-4cbe-4986-9b10-43a95ef62415",
+          "kind": "solid",
+          "x": 640,
+          "y": 192,
+          "width": 352,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-4d461727-f20d-46d6-9a54-54568d311a28",
+          "kind": "solid",
+          "x": 608,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-ab9ee0cb-8d61-4bef-abbb-c1a5ddc5d3f6",
+          "kind": "solid",
+          "x": 640,
+          "y": 64,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-990f4fa4-fcac-45af-b672-b965e5b22deb",
+          "kind": "solid",
+          "x": 640,
+          "y": 96,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-99e55937-bf9a-4fab-8fa7-b6eb0cefa979",
+          "kind": "solid",
+          "x": 640,
+          "y": 128,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-eec18df7-91dd-4d6b-a2c6-6d27a09c7e88",
+          "kind": "solid",
+          "x": 640,
+          "y": 160,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-831b5f6e-0121-4efd-8564-4770e12bb735",
+          "kind": "solid",
+          "x": 576,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-2376aa93-f0a9-4abe-9134-6a46faae882f",
+          "kind": "solid",
+          "x": 544,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-09bd42a4-1dbb-4a7f-818e-3c62b49bd0ed",
+          "kind": "solid",
+          "x": 544,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9f98c673-8d3b-4b93-a59e-a65e2692ca6b",
+          "kind": "solid",
+          "x": 544,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b5c2eedd-0600-453f-a73f-2800715d005f",
+          "kind": "solid",
+          "x": 512,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-4f64af68-ab46-4966-b99f-0ccbb0eb4032",
+          "kind": "solid",
+          "x": 480,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-9b378722-0b2c-415b-a5bc-3216b45c41a5",
+          "kind": "solid",
+          "x": 448,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-c6008042-fe38-49ce-9515-eee22d9de0e9",
+          "kind": "solid",
+          "x": 416,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-75a977d1-62a5-4aa2-931a-7db4fe2f3669",
+          "kind": "solid",
+          "x": 384,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5df0e6af-4f42-472b-b28c-d785c6b2ad28",
+          "kind": "solid",
+          "x": 352,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-3edec119-0b44-4b37-806d-edfdc1bf6970",
+          "kind": "solid",
+          "x": 320,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-418248fc-e9d2-46b1-a686-23211d9a0894",
+          "kind": "spawn",
+          "x": 64,
+          "y": 64
+        },
+        {
+          "id": "e-d98ff90e-3ae3-442e-ac3b-62c8d2f8b100",
+          "kind": "solid",
+          "x": 416,
+          "y": 64,
+          "width": 128,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-af142812-c90a-4190-9839-65fd1dc07b43",
+          "kind": "gate",
+          "x": 448,
+          "y": 256,
+          "requiresBoss": true
+        },
+        {
+          "id": "e-722c8c4b-3cd7-4e1e-9351-f2a9c6a58d5e",
+          "kind": "platform",
+          "x": 64,
+          "y": 832,
+          "width": 192
+        },
+        {
+          "id": "e-54f3bfea-1c57-4ff3-b576-ce669ae393d0",
+          "kind": "platform",
+          "x": 96,
+          "y": 736,
+          "width": 224
+        },
+        {
+          "id": "e-411a5ed6-a170-4fb9-9d44-ab7cb8598311",
+          "kind": "platform",
+          "x": 96,
+          "y": 576,
+          "width": 192
+        },
+        {
+          "id": "e-57a4b338-df0b-441e-afdb-c36ca1a25c1e",
+          "kind": "platform",
+          "x": 96,
+          "y": 448,
+          "width": 256
+        },
+        {
+          "id": "e-e88f839b-0de8-42a3-9b44-c14f9088f0e9",
+          "kind": "platform",
+          "x": 256,
+          "y": 320,
+          "width": 64
+        },
+        {
+          "id": "e-c21d8a57-98ca-4823-bcf8-7a27a939a993",
+          "kind": "fruit",
+          "x": 192,
+          "y": 256,
+          "value": 1
+        },
+        {
+          "id": "e-7d968f5a-25d6-475a-96d5-984deefa81f5",
+          "kind": "fruit",
+          "x": 192,
+          "y": 384,
+          "value": 1
+        },
+        {
+          "id": "e-7de3e33b-5221-44db-a119-e71b7a86fa78",
+          "kind": "fruit",
+          "x": 192,
+          "y": 544,
+          "value": 1
+        },
+        {
+          "id": "e-46d9e35a-d1f1-42dd-8caf-4a8106da20c4",
+          "kind": "fruit",
+          "x": 192,
+          "y": 672,
+          "value": 1
+        },
+        {
+          "id": "e-3828f282-d2eb-492f-9e6f-93190ef4cebb",
+          "kind": "fruit",
+          "x": 192,
+          "y": 800,
+          "value": 1
+        },
+        {
+          "id": "e-1334b537-6b79-4916-9088-af5c814afae1",
+          "kind": "fruit",
+          "x": 288,
+          "y": 32,
+          "value": 1
+        },
+        {
+          "id": "e-e0a4ef48-1aec-4439-aa7d-c9840dcfded5",
+          "kind": "fruit",
+          "x": 608,
+          "y": 64,
+          "value": 1
+        },
+        {
+          "id": "e-f6831eba-d041-4f42-a4f1-82c3daa0e71a",
+          "kind": "enemy",
+          "x": 640,
+          "y": 928,
+          "customName": "",
+          "spriteId": "",
+          "type": "pumpkin",
+          "hp": 8,
+          "ai": {
+            "mode": "chase",
+            "speed": 66,
+            "range": 96,
+            "aggro": 200,
+            "jumpInterval": 1.5,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-15c7d740-20b9-4380-b236-782aa9236289",
+          "kind": "enemy",
+          "x": 96,
+          "y": 320,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 59,
+            "range": 103,
+            "aggro": 198,
+            "jumpInterval": 1.4,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-85ad20f9-aac4-46dc-b80c-c484e3005472",
+          "kind": "enemy",
+          "x": 544,
+          "y": 576,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 59,
+            "range": 103,
+            "aggro": 198,
+            "jumpInterval": 1.4,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-6b11a9c5-36cd-43ae-bc42-7018f8364744",
+          "kind": "enemy",
+          "x": 480,
+          "y": 832,
+          "customName": "",
+          "spriteId": "",
+          "type": "bat",
+          "hp": 1,
+          "ai": {
+            "mode": "fly",
+            "speed": 59,
+            "range": 103,
+            "aggro": 198,
+            "jumpInterval": 1.4,
+            "damage": 1
+          }
+        },
+        {
+          "id": "e-6dbfd231-c7b7-4fa6-a217-f85cbd5086fd",
+          "kind": "npc",
+          "x": 928,
+          "y": 960,
+          "customName": "Alejandra",
+          "spriteId": "",
+          "type": "healer",
+          "heal": true,
+          "healAmount": 1,
+          "dialogue": [
+            {
+              "speaker": "healer",
+              "mood": "feliz",
+              "text": "Vocês estão perto de casa! Derrotem a Abóbora Casca-Dura e voltem ao portal. São oito pulos na cabeça!"
+            },
+            {
+              "speaker": "luli",
+              "mood": "surpresa",
+              "text": "Oito pulos? Essa abóbora é teimosa, hein?"
+            },
+            {
+              "speaker": "chris",
+              "mood": "sorrindo",
+              "text": "Conheço alguém que pula muito bem."
+            },
+            {
+              "speaker": "luli",
+              "mood": "seria",
+              "text": "E eu conheço alguém que vai me ajudar."
+            }
+          ]
+        },
+        {
+          "id": "e-19619bd1-a778-4661-87c0-e594fa426fc2",
+          "kind": "solid",
+          "x": 640,
+          "y": 928,
+          "width": 360,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b07acb30-ebdf-4e8c-a1a2-db6dd0fb9b10",
+          "kind": "solid",
+          "x": 640,
+          "y": 960,
+          "width": 360,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-598a3788-ec3f-4bc2-aebe-ba14251e03eb",
+          "kind": "solid",
+          "x": 640,
+          "y": 672,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-b8e9bcd5-424b-4be8-80bb-1131f4b34849",
+          "kind": "solid",
+          "x": 640,
+          "y": 640,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-936121cb-534b-4d82-b73e-67648ecc3e12",
+          "kind": "solid",
+          "x": 640,
+          "y": 608,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-39da28c0-ede7-466e-8d6c-5defb18d9134",
+          "kind": "solid",
+          "x": 640,
+          "y": 576,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8b356d53-0a2f-418c-96ac-aeb0a5fd920b",
+          "kind": "solid",
+          "x": 640,
+          "y": 544,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-ad26ad6e-cce9-42da-a74b-700a084e785c",
+          "kind": "solid",
+          "x": 640,
+          "y": 512,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8d3142f7-3f37-49c1-be7c-9fccef8666a3",
+          "kind": "solid",
+          "x": 640,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-eda3a25f-0c9f-4c3c-b518-80ecee53503b",
+          "kind": "solid",
+          "x": 640,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-16f01890-e542-41f1-9319-045e12871048",
+          "kind": "solid",
+          "x": 640,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-c7f58298-1389-449a-861b-c92416608079",
+          "kind": "solid",
+          "x": 640,
+          "y": 384,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-34bedbac-c8ba-4eb4-a5f1-84dcac683adc",
+          "kind": "solid",
+          "x": 640,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-99674e39-94da-4ed0-87c1-8247cc4613f2",
+          "kind": "solid",
+          "x": 640,
+          "y": 320,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-14242efc-bf0b-4797-90e8-c526b197dc7b",
+          "kind": "solid",
+          "x": 640,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-d6d73fad-a230-40a0-90d8-76e9d23fa3f1",
+          "kind": "solid",
+          "x": 640,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5861b85d-8768-483a-bcb6-23b64347abe4",
+          "kind": "solid",
+          "x": 640,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-198bec52-104e-41aa-a2c5-c758f2cd847f",
+          "kind": "solid",
+          "x": 960,
+          "y": 896,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8c07f776-01fb-4524-86da-6d65c9cfd451",
+          "kind": "solid",
+          "x": 960,
+          "y": 864,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8f65c4f2-06db-422b-be0b-1d3a86619795",
+          "kind": "solid",
+          "x": 960,
+          "y": 736,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-8b12ff8f-c3f8-45d7-9e86-20aa58b31fa8",
+          "kind": "solid",
+          "x": 960,
+          "y": 768,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7884cf7a-5c80-4353-97a2-5fb22555b8fc",
+          "kind": "solid",
+          "x": 960,
+          "y": 832,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-46103cba-31a5-4d12-ad98-9b17e93a8ca8",
+          "kind": "solid",
+          "x": 960,
+          "y": 800,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-7b090fb8-1906-406b-97e4-e6e0f25843d3",
+          "kind": "solid",
+          "x": 960,
+          "y": 704,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-06897c31-d989-4f74-8ff1-7563476fadc3",
+          "kind": "solid",
+          "x": 960,
+          "y": 672,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-06e957bc-50a7-4f5a-8071-99d8d6bdffb5",
+          "kind": "solid",
+          "x": 960,
+          "y": 640,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-3230f768-4b8a-4b55-9dd0-6578d8733eb9",
+          "kind": "solid",
+          "x": 960,
+          "y": 608,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-cd45725b-a372-4f62-bbd8-3fa6939e50bd",
+          "kind": "solid",
+          "x": 960,
+          "y": 576,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-54de0bd9-b4b2-483c-a531-5542ac1c166e",
+          "kind": "solid",
+          "x": 960,
+          "y": 544,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-63c47046-dd1b-4c86-8fe8-9b56ba6604f9",
+          "kind": "solid",
+          "x": 960,
+          "y": 512,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-e1478dd8-b52f-4bf7-800f-e5823a3ef1b3",
+          "kind": "solid",
+          "x": 960,
+          "y": 480,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-1d612263-dfff-49d3-8dfe-fe5d99fdb496",
+          "kind": "solid",
+          "x": 960,
+          "y": 448,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-0b23aa6c-c7dd-4d8d-8683-77ab713876ed",
+          "kind": "solid",
+          "x": 960,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-5cb11d41-7bd0-468b-b714-f287e1c9aad6",
+          "kind": "solid",
+          "x": 960,
+          "y": 384,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-e7e27a1f-fa68-4bb0-ba46-4c06e422ff1f",
+          "kind": "solid",
+          "x": 960,
+          "y": 352,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-00bedd8f-0993-49a3-94d3-3e0b9bb66740",
+          "kind": "solid",
+          "x": 960,
+          "y": 320,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-3c02ed25-d137-4bef-ab85-533e607dee80",
+          "kind": "solid",
+          "x": 960,
+          "y": 288,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-053cba52-a509-4ad3-92b2-7efa772ec0e4",
+          "kind": "solid",
+          "x": 960,
+          "y": 256,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "e-a34be5ab-cf96-463b-b5bb-c5c6648601bd",
+          "kind": "solid",
+          "x": 960,
+          "y": 224,
+          "width": 32,
+          "height": 32,
+          "channel": "A"
+        },
+        {
+          "id": "foundation-cp-8-1",
+          "kind": "checkpoint",
+          "x": 415,
+          "y": 922
+        }
+      ]
+    }
+  ]
+}
