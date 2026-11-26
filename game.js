@@ -70,6 +70,11 @@ let fruits=[],enemies=[],npcList=[],editorEvents=[],particles=[],rescue=null,his
 let checkpointX=90,checkpointY=462,invulnerable=0,coyote=0,jumpBuffer=0,dialogue=[],dialogIndex=0,dialogReturn='playing',dialogAction=null,nearNPC=null,toastClock=0,playerTime=0,finishOnce=false;
 let view={w:960,h:540},muted=!!progress.muted,audioCtx=null;
 const keys={left:false,right:false,jump:false};
+const keySources={left:new Set(),right:new Set(),jump:new Set()},pointerOwners=new Map();let duoOwner=null;
+const controlIds={left:'leftBtn',right:'rightBtn',jump:'jumpBtn',interact:'interactBtn',duo:'duoBtn'};
+function setInputSource(key,source,down){const sources=keySources[key];if(!sources)return;const before=sources.size>0;if(down)sources.add(source);else sources.delete(source);keys[key]=sources.size>0;if(key==='jump'&&down&&!before)jump();}
+function releaseInputs(){for(const set of Object.values(keySources))set.clear();keys.left=keys.right=keys.jump=false;pointerOwners.clear();duoOwner=null;duoEnd(true);for(const id of Object.values(controlIds))$(id).classList.remove('down');}
+function syncControls(){const controls=$('touchControls');controls.dataset.mode=mode;const b=$('duoBtn');b.dataset.parked=String(parked);b.dataset.unavailable=String(!luliPresent);$('duoButtonLabel').textContent=parked?'REUNIR':'DUPLA';$('duoHoldFill').style.width=duoPress===null||parked?'0%':Math.round(clamp((performance.now()-duoPress)/600,0,1)*100)+'%';$('interactBtn').dataset.near=String(!!nearNPC);$('interactLabel').textContent=nearNPC?.type==='healer'&&!nearNPC.used?'CURAR':'FALAR';}
 const npcText={
  guardian:[['guardian','dica','A luz da minha lanterna aponta o caminho para a ponte! Sigam em frente e pulem sobre as criaturas para espantá-las.'],['chris','surpreso','Você sabe como podemos voltar para casa?'],['guardian','feliz','Sigam juntos, e logo encontrarão o caminho de casa.']],
  apple:[['apple','dica','Frutas brilhantes recuperam sua energia. Junte 12 para ganhar um coração, se precisar.'],['apple','dica','E os monstrinhos só podem ser derrotados pulando bem em cima deles. Nada de encostar de lado!']],
@@ -167,14 +172,14 @@ function startLevel(ix,keepHearts=false){levelStartScore=score;checkpointState=n
  player={x:level.spawn??95,y:Math.max(0,(level.spawnY??FLOOR)-65),vx:0,vy:0,w:39,h:65,onGround:true,face:1,anim:0,landTimer:0,talkTimer:0};companion=bodyAt(Math.max(1,player.x-50),player.y,1);
  cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,(level.height||540)-view.h));checkpointX=level.spawn??95;checkpointY=level.spawnY??FLOOR;invulnerable=0;finishOnce=false;nearNPC=null;coyote=.1;jumpBuffer=0;playerTime=0;makeObjects();
  overlay.classList.add('hidden');hud.classList.remove('hidden');$('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');
- keys.left=keys.right=keys.jump=false;storySeen=new Set();storyCooldown=1.2;const initial=safeStartPair();player=initial.player;companion=initial.companion;for(const b of [player,companion]){b.onGround=supported(b);b.airJump=!b.onGround;}cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,level.height-view.h));startState=captureState('start',initial);updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
+ releaseInputs();storySeen=new Set();storyCooldown=1.2;const initial=safeStartPair();player=initial.player;companion=initial.companion;for(const b of [player,companion]){b.onGround=supported(b);b.airJump=!b.onGround;}cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,level.height-view.h));startState=captureState('start',initial);updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
 }
-function updateHUD(){if(!level)return;$('levelText').textContent=(levelIndex+1)+'. '+level.name;$('duoText').textContent=luliPresent?(active.toUpperCase()+' • '+(parked?otherHero().toUpperCase()+' AGUARDA':'DUPLA')):'CHRIS SOZINHO';
- const status=$('duoText').parentElement;status.classList.toggle('rescuing',!luliPresent);$('heartText').textContent='♥ '.repeat(heart).trim()+' ♡'.repeat(3-heart);
- $('fruitText').textContent=levelFruit;$('progressFill').style.width=Math.round(clamp((player.x-(level.spawn??95))/Math.max(1,(level.gate??level.width)-(level.spawn??95)),0,1)*100)+'%';
- $('rescueBanner').classList.toggle('hidden',luliPresent);const boss=enemies.find(e=>e.type==='pumpkin'&&e.alive);$('bossHud').classList.toggle('hidden',!boss||Math.abs(player.x-boss.x)>650);if(boss)$('bossHearts').textContent='♥ '.repeat(boss.hp);
+function updateHUD(){if(!level)return;$('levelText').textContent=(levelIndex+1)+'. '+level.name;$('duoText').textContent=active.toUpperCase();$('duoStatus').textContent=!luliPresent?'Sozinho • resgate Luli':parked?otherHero()+' aguarda':'Dupla reunida';$('duoText').parentElement.parentElement?.dataset&&($('duoText').parentElement.parentElement.dataset.active=active);
+ const status=$('duoDot').parentElement;status.classList.toggle('rescuing',!luliPresent);if(status.dataset)status.dataset.active=active;$('heartText').textContent='♥ '.repeat(heart).trim()+' ♡'.repeat(3-heart);
+ $('fruitText').textContent=levelFruit;const advance=Math.round(clamp((player.x-(level.spawn??95))/Math.max(1,(level.gate??level.width)-(level.spawn??95)),0,1)*100);$('progressFill').style.width=advance+'%';const meter=$('phaseProgress');if(meter.setAttribute)meter.setAttribute('aria-valuenow',String(advance));$('objectiveText').textContent=!luliPresent?'Resgate Luli':bossBlocksPortal()?'Derrote o guardião':parked?'Reúna a dupla para o portal':'Alcance o portal';
+ $('rescueBanner').classList.toggle('hidden',luliPresent);const boss=enemies.find(e=>e.type==='pumpkin'&&e.alive);$('bossHud').classList.toggle('hidden',!boss||Math.abs(player.x-boss.x)>650);if(boss){$('bossHearts').textContent='♥ '.repeat(boss.hp).trim()+'  '+boss.hp+'/'+boss.maxHp;$('bossFill').style.width=Math.round(LuliEnemies.healthRatio(boss)*100)+'%';}
 }
-function showDialogue(lines,returnTo='playing',after=null){if(!lines?.length)return;duoEnd(true);jumpBuffer=0;if(player)player.talkTimer=.5;dialogue=lines;dialogIndex=0;dialogReturn=returnTo;dialogAction=after;mode='dialog';dialog.classList.remove('hidden');interEl.classList.add('hidden');renderDialogue()}
+function showDialogue(lines,returnTo='playing',after=null){if(!lines?.length)return;releaseInputs();jumpBuffer=0;if(player)player.talkTimer=.5;dialogue=lines;dialogIndex=0;dialogReturn=returnTo;dialogAction=after;mode='dialog';dialog.classList.remove('hidden');interEl.classList.add('hidden');renderDialogue()}
 const moods={sorrindo:'♥',agradecido:'♥',pensando:'?',seria:'✦',serio:'✦',irritado:'!',suspirando:'…',feliz:'♥',surpresa:'!',surpreso:'!',dica:'✧',história:'✦',confiante:'★',preocupado:'?',determinado:'⚡',fim:'♡'};
 const normalizeMood=m=>String(m||'normal').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 function renderDialogue(){const d=dialogue[dialogIndex];if(!d)return;if(player)player.talkTimer=d.who===active?.5:0;if(companion)companion.talkTimer=d.who===otherHero()?.5:0;
@@ -186,13 +191,13 @@ function renderDialogue(){const d=dialogue[dialogIndex];if(!d)return;if(player)p
  const box=im.parentElement;box.style.background=d.mood==='preocupado'?'radial-gradient(circle at 50% 30%,#65799e,#3a2f63 78%)':'radial-gradient(circle at 50% 30%,#a4799a,#4a3264 78%)';beep(500,.035,'sine',.025,120);
 }
 function nextDialogue(){if(mode!=='dialog')return;dialogIndex++;if(dialogIndex<dialogue.length){renderDialogue();return}dialog.classList.add('hidden');if(player)player.talkTimer=0;if(companion)companion.talkTimer=0;const cb=dialogAction;dialogAction=null;mode=dialogReturn;if(cb)cb();if(mode==='playing')storyCooldown=1.2;if(mode==='won')showEndingPanel()}
-function showMenu(){mode='menu';dialog.classList.add('hidden');hud.classList.add('hidden');overlay.classList.remove('hidden');overlay.innerHTML=ORIGINAL_MENU;
+function showMenu(){releaseInputs();mode='menu';dialog.classList.add('hidden');hud.classList.add('hidden');overlay.classList.remove('hidden');overlay.innerHTML=ORIGINAL_MENU;
  $('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');toastEl.classList.remove('shown');const cont=$('continueBtn');if(progress.unlocked>0){cont.classList.remove('hidden');cont.textContent=`Continuar • fase ${progress.unlocked+1}`;}const status=$('campaignStatus');if(status)status.textContent=progress.completed?'Aventura concluída • 8/8':`${Math.min(progress.unlocked,7)} de 8 fases concluídas`;}
 function panel(kicker,title,description,buttons){overlay.classList.remove('hidden');overlay.innerHTML=`<div class="overlay-bg-stars"></div><section class="menu-panel"><div class="menu-eyebrow">${kicker}</div><h1>${title}</h1><p class="menu-description" style="max-width:510px;font-size:15px;margin:16px auto 20px">${description}</p><div class="menu-buttons">${buttons.map((b,i)=>`<button class="${i?'secondary-btn':'primary-btn'}" data-action="${b.action}">${b.label}</button>`).join('')}</div></section>`}
-function pause(){if(mode!=='playing')return;duoEnd(true);mode='paused';panel('✦ A JORNADA PODE ESPERAR','Pausa','Luli e Chris estão esperando para continuar a aventura.',[{action:'resume',label:'▶ CONTINUAR'},{action:'restart',label:'RECOMEÇAR A FASE'},{action:'menu',label:'MENU PRINCIPAL'}])}
+function pause(){if(mode!=='playing')return;releaseInputs();mode='paused';panel('✦ A JORNADA PODE ESPERAR','Pausa','Luli e Chris estão esperando para continuar a aventura.',[{action:'resume',label:'▶ CONTINUAR'},{action:'restart',label:'RECOMEÇAR A FASE'},{action:'menu',label:'MENU PRINCIPAL'}])}
 function resume(){if(mode!=='paused')return;overlay.classList.add('hidden');mode='playing'}
-function gameOver(){mode='gameover';duoEnd(true);beep(250,.35,'triangle',.09,-160);panel('✦ O CAMINHO AINDA EXISTE','Tente de novo!',checkpointState?'Os três corações acabaram. Retorne ao último checkpoint ou recomece a fase.':'Os três corações acabaram. Recomece esta fase.',[...(checkpointState?[{action:'checkpoint',label:'↻ VOLTAR AO CHECKPOINT'}]:[]),{action:'restart',label:checkpointState?'RECOMEÇAR A FASE':'↻ TENTAR NOVAMENTE'},{action:'menu',label:'VOLTAR AO MENU'}])}
-function completeLevel(){if(mode!=='playing'||finishOnce||portalBlockReason())return;finishOnce=true;mode='levelend';chime();progress.unlocked=Math.max(progress.unlocked,Math.min(LEVELS.length-1,levelIndex+1));progress.best=Math.max(progress.best,score);save();const isLast=levelIndex===LEVELS.length-1;
+function gameOver(){mode='gameover';releaseInputs();beep(250,.35,'triangle',.09,-160);panel('✦ O CAMINHO AINDA EXISTE','Tente de novo!',checkpointState?'Os três corações acabaram. Retorne ao último checkpoint ou recomece a fase.':'Os três corações acabaram. Recomece esta fase.',[...(checkpointState?[{action:'checkpoint',label:'↻ VOLTAR AO CHECKPOINT'}]:[]),{action:'restart',label:checkpointState?'RECOMEÇAR A FASE':'↻ TENTAR NOVAMENTE'},{action:'menu',label:'VOLTAR AO MENU'}])}
+function completeLevel(){if(mode!=='playing'||finishOnce||portalBlockReason())return;finishOnce=true;releaseInputs();mode='levelend';chime();progress.unlocked=Math.max(progress.unlocked,Math.min(LEVELS.length-1,levelIndex+1));progress.best=Math.max(progress.best,score);save();const isLast=levelIndex===LEVELS.length-1;
  if(isLast){overlay.classList.add('hidden');showDialogue(speech(...DIALOG.ending),'won');return;}
  panel('✦ MAIS PERTO DE CASA','Fase concluída!',`Luli e Chris atravessaram <b>${String(level.name).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</b>.<br>Você coletou <b>${levelFruit} frutas</b>. Mais um passo no caminho de casa.`,[{action:'next',label:'▶ PRÓXIMA FASE'},{action:'menu',label:'VOLTAR AO MENU'}]);}
 function showEndingPanel(){progress.completed=true;progress.unlocked=LEVELS.length-1;save();panel('✧ VOCÊ CHEGOU AO FIM ✧','De volta ao lar! ♡','O caminho foi difícil, mas eles chegaram juntos.<br><br><b>Parabéns! Você concluiu as 8 fases.</b><br>Para Luli, com carinho. ♡',[{action:'all',label:'↻ JOGAR NOVAMENTE'},{action:'menu',label:'VOLTAR AO MENU'}]);}
@@ -237,7 +242,7 @@ function restoreSnapshot(snapshot,options={}){
  for(const b of [player,companion])if(b){b.vx=0;b.vy=0;b.onGround=supported(b);b.airJump=false;b.landTimer=0;b.talkTimer=0;}
  heart=options.heart??3;if(options.solo){active='chris';luliPresent=false;companion=null;}
  checkpointX=player.x;checkpointY=player.y+player.h;if(snapshot.id==='start')checkpointState=null;
- invulnerable=2.3;coyote=player.onGround?.1:0;jumpBuffer=0;duoPress=null;keys.left=keys.right=keys.jump=false;
+ invulnerable=2.3;coyote=player.onGround?.1:0;jumpBuffer=0;releaseInputs();
  nearNPC=null;storyCooldown=1.2;dialogue=[];dialogAction=null;dialogIndex=0;finishOnce=false;mode='playing';
  cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,level.height-view.h));
  overlay.classList.add('hidden');dialog.classList.add('hidden');hud.classList.remove('hidden');interEl.classList.add('hidden');
@@ -320,20 +325,37 @@ function interact(){if(player&&mode==='playing')player.talkTimer=.8;if(mode==='d
  else if(npc.type==='healer'&&npc.used)lines=[['healer','dica','Minhas flores especiais desta fase já foram usadas. Mas vocês podem recuperar Luli com o cristal prismático!']];
  showDialogue(speech(...lines));}
 function jump(){if(mode==='dialog'){nextDialogue();return}if(mode!=='playing')return;jumpBuffer=.15}
-function inputKey(event,down){if(down&&(mode==='menu'||mode==='paused'||mode==='levelend'||mode==='gameover'||mode==='won')&&event.target?.tagName==='BUTTON'&&['Space','Enter'].includes(event.code))return;if(event.code==='KeyQ'){event.preventDefault();if(down){if(!event.repeat)duoStart();}else duoEnd();return;}const codes={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'jump',ArrowUp:'jump',KeyW:'jump'};
- if(codes[event.code]){event.preventDefault();const k=codes[event.code];if(down&&!keys[k]&&k==='jump')jump();keys[k]=down;return;}
+function inputKey(event,down){if(down&&(mode==='menu'||mode==='paused'||mode==='levelend'||mode==='gameover'||mode==='won')&&event.target?.tagName==='BUTTON'&&['Space','Enter'].includes(event.code))return;if(event.code==='KeyQ'){event.preventDefault();if(down&&!event.repeat&&mode==='playing'&&duoOwner===null){duoOwner='keyboard';duoStart();}else if(!down&&duoOwner==='keyboard'){duoOwner=null;duoEnd();}return;}const codes={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'jump',ArrowUp:'jump',KeyW:'jump'};
+ if(codes[event.code]){event.preventDefault();const k=codes[event.code];if(down&&mode!=='playing'&&mode!=='dialog')return;if(down&&mode==='dialog'){if(k==='jump'&&!event.repeat)jump();return;}setInputSource(k,'key:'+event.code,down);return;}
  if(!down||event.repeat)return;
  if(['KeyE','Enter'].includes(event.code)){event.preventDefault();interact();return}
  if(['Escape','KeyP'].includes(event.code)){event.preventDefault();mode==='paused'?resume():pause()}
  if(event.code==='KeyM'){muted=!muted;progress.muted=muted;save();$('soundBtn').textContent=muted?'♪̸':'♫'}
 }
 window.addEventListener('keydown',e=>inputKey(e,true));window.addEventListener('keyup',e=>inputKey(e,false));
-window.addEventListener('blur',()=>{keys.left=keys.right=keys.jump=false;duoEnd(true)});
-document.addEventListener('visibilitychange',()=>{if(document.hidden){keys.left=keys.right=keys.jump=false;if(mode==='playing')pause()}});
-function touch(id,key){const b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('down');if(key==='interact')interact();else{keys[key]=true;if(key==='jump')jump()}try{b.setPointerCapture(e.pointerId)}catch{}});
- const release=e=>{e.preventDefault();b.classList.remove('down');if(key!=='interact')keys[key]=false};b.addEventListener('pointerup',release);b.addEventListener('pointercancel',release);b.addEventListener('lostpointercapture',()=>{b.classList.remove('down');if(key!=='interact')keys[key]=false})}
-for(const [id,k] of [['leftBtn','left'],['rightBtn','right'],['jumpBtn','jump'],['interactBtn','interact']])touch(id,k);
-$('duoBtn').addEventListener('pointerdown',e=>{e.preventDefault();duoStart();try{$('duoBtn').setPointerCapture(e.pointerId)}catch{}});$('duoBtn').addEventListener('pointerup',e=>{e.preventDefault();duoEnd()});$('duoBtn').addEventListener('pointercancel',()=>duoEnd(true));$('duoBtn').addEventListener('lostpointercapture',()=>duoEnd(true));
+window.addEventListener('blur',releaseInputs);
+window.addEventListener('orientationchange',()=>{releaseInputs();resize();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){releaseInputs();if(mode==='playing')pause();}});
+function touch(id,key){
+ const b=$(id);
+ b.addEventListener('pointerdown',event=>{
+  event.preventDefault();if(mode!=='playing'||pointerOwners.has(event.pointerId))return;
+  const token='ptr:'+event.pointerId;
+  if(key==='duo'){if(duoOwner!==null||!luliPresent||!companion)return;duoOwner=token;duoStart();}
+  pointerOwners.set(event.pointerId,key);b.classList.add('down');
+  if(key==='interact')interact();else if(key!=='duo')setInputSource(key,token,true);
+  try{b.setPointerCapture(event.pointerId)}catch{}
+ });
+ function release(event,cancel=false){
+  event.preventDefault?.();if(pointerOwners.get(event.pointerId)!==key)return;
+  pointerOwners.delete(event.pointerId);const token='ptr:'+event.pointerId;
+  if(key==='duo'&&duoOwner===token){duoOwner=null;duoEnd(cancel);}
+  else if(key!=='interact'&&key!=='duo')setInputSource(key,token,false);
+  if(![...pointerOwners.values()].includes(key))b.classList.remove('down');
+ }
+ b.addEventListener('pointerup',e=>release(e));b.addEventListener('pointercancel',e=>release(e,true));b.addEventListener('lostpointercapture',e=>release(e,true));
+}
+for(const [id,key] of Object.entries(controlIds).map(([key,id])=>[id,key]))touch(id,key);
 $('dialogNext').addEventListener('click',nextDialogue);dialog.addEventListener('click',e=>{if(!e.target.closest('button'))nextDialogue()});
 $('soundBtn').textContent=muted?'♪̸':'♫';$('soundBtn').addEventListener('click',()=>{muted=!muted;progress.muted=muted;save();$('soundBtn').textContent=muted?'♪̸':'♫';if(!muted)chime()});
 $('pauseBtn').addEventListener('click',()=>{if(mode==='paused')resume();else pause()});
@@ -618,7 +640,7 @@ function draw(){ctx.setTransform(canvas.width/view.w,0,0,canvas.height/view.h,0,
  ctx.restore();drawForeground();
 }
 function loop(t){if(!lastFrame)lastFrame=t;const dt=Math.min((t-lastFrame)/1000,.05);lastFrame=t;accumulator+=dt;
- let n=0;while(accumulator>=FIXED_DT&&n<3){update(FIXED_DT);accumulator-=FIXED_DT;n++}draw();requestAnimationFrame(loop)}
-function setup(){resize();activateStudioSprites(window.LULI_CAMPAIGN);level=LEVELS[0];FLOOR=level.height-78;player=bodyAt(level.spawn??95,(level.spawnY??FLOOR)-65);companion=bodyAt(Math.max(1,player.x-50),player.y);makeObjects();showMenu();requestAnimationFrame(loop);}
+ let n=0;while(accumulator>=FIXED_DT&&n<3){update(FIXED_DT);accumulator-=FIXED_DT;n++}syncControls();draw();requestAnimationFrame(loop)}
+function setup(){resize();activateStudioSprites(window.LULI_CAMPAIGN);level=LEVELS[0];FLOOR=level.height-78;player=bodyAt(level.spawn??95,(level.spawnY??FLOOR)-65);companion=bodyAt(Math.max(1,player.x-50),player.y);makeObjects();showMenu();syncControls();requestAnimationFrame(loop);}
 setup();
 })();
