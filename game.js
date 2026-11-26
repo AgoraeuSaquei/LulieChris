@@ -103,16 +103,71 @@ function solids(except){return [...puzzle.filter(o=>o!==except&&(o.kind==='solid
 function enemyWorld(){return {width:level.width,height:level.height||540,floor:FLOOR,solids:solids(),surfaces:surfaces()};}
 function clearBody(b){return b.x>=1&&b.x+b.w<=level.width&&b.y>=0&&b.y+b.h<=(level.height||540)&&!solids().some(o=>LuliPuzzles.overlap(b,o));}
 function nearbyBody(x,y,face){for(const dy of [0,-16,-32,-64,-96])for(const dx of [0,-48,48,-96,96]){const b=bodyAt(clamp(x+dx,1,level.width-39),y+dy,face);if(clearBody(b)&&!LuliPuzzles.overlap(b,player))return b;}return null;}
-function recall(){const b=nearbyBody(player.x-player.face*48,player.y,player.face);if(!b){toast('Sem espaço para chamar o companheiro.');return;}companion=b;parked=false;history=[];spawnBurst(b.x+19,b.y+28,'#bde9ff',12);toast('Dupla reunida!');}
-function duoStart(){if(mode==='playing'&&luliPresent&&duoPress===null)duoPress=performance.now();}
-function duoEnd(cancel=false){if(duoPress===null)return;const held=performance.now()-duoPress;duoPress=null;if(cancel||mode!=='playing'||!luliPresent||!companion)return;if(parked){recall();return;}if(held>=600){if(!clearBody(companion)||LuliPuzzles.overlap(companion,player)){const b=nearbyBody(companion.x,companion.y,companion.face);if(!b){toast('Não há espaço para o companheiro esperar.');return;}companion=b;}companion.vx=0;companion.vy=0;parked=true;toast(otherHero()+' aguardando aqui. Q para chamar.');return;}if(!clearBody(companion)||LuliPuzzles.overlap(companion,player)){const b=nearbyBody(companion.x,companion.y,companion.face);if(!b){toast('Sem espaço para alternar.');return;}companion=b;}const old=player;player=companion;companion=old;active=otherHero();player.vx=0;player.vy=0;LuliPuzzles.moveY(player,.5,solids(),surfaces());player.airJump=!player.onGround;coyote=0;jumpBuffer=0;history=[];toast(active==='luli'?'Luli • salto duplo':'Chris • empurrar caixas');}
-function movePuzzles(dt){const P=LuliPuzzles;for(const c of puzzle.filter(o=>o.kind==='crate')){c.vy=Math.min(1000,c.vy+GRAVITY*dt);P.moveY(c,c.vy*dt,[...solids(c),player,...(parked&&companion?[companion]:[])],surfaces());if(c.y>(level.height||540)+80){c.x=c.homeX;c.y=c.homeY;c.vy=0;}}if(parked&&companion){companion.vy=Math.min(1000,companion.vy+GRAVITY*dt);P.moveY(companion,companion.vy*dt,solids(),surfaces());if(companion.y>(level.height||540)+80)recall();}}
+function safeReunion(){
+ const pair=pairAt(player,!!player.onGround)||pairAt(player,false);
+ if(!pair)return null;
+ const b=pair.companion;b.onGround=supported(b);b.airJump=!b.onGround;b.vx=0;b.vy=0;return b;
+}
+function recall(){
+ const b=safeReunion();if(!b){toast('Sem espaço para chamar o companheiro.');return false;}
+ companion=b;parked=false;history=[];spawnBurst(b.x+19,b.y+28,'#bde9ff',12);toast('Dupla reunida!');return true;
+}
+function duoStart(){if(mode==='playing'&&luliPresent&&companion&&duoPress===null)duoPress=performance.now();}
+function duoEnd(cancel=false){
+ if(duoPress===null)return;const held=performance.now()-duoPress;duoPress=null;
+ if(cancel||mode!=='playing'||!luliPresent||!companion)return;
+ if(parked){recall();return;}
+ if(!clearBody(companion)||LuliPuzzles.overlap(companion,player)){
+  const b=safeReunion();if(!b){toast('Sem espaço seguro para a dupla.');return;}companion=b;
+ }
+ if(held>=600){
+  companion.vx=0;companion.vy=0;companion.onGround=supported(companion);companion.airJump=!companion.onGround;parked=true;history=[];
+  toast(otherHero()+' aguardando aqui. Q para chamar.');return;
+ }
+ const old=player;player=companion;companion=old;active=otherHero();
+ player.onGround=supported(player);player.airJump=!player.onGround;player.vx=0;player.vy=clamp(player.vy||0,-735,900);
+ if(player.onGround)player.vy=0;
+ coyote=player.onGround?.10:0;jumpBuffer=0;history=[];
+ toast(active==='luli'?'Luli • salto duplo':'Chris • empurrar caixas');
+}
+function animateBody(b,dt,wasGrounded){
+ b.landTimer=Math.max(0,(b.landTimer||0)-dt);b.talkTimer=Math.max(0,(b.talkTimer||0)-dt);
+ if(b.onGround&&!wasGrounded)b.landTimer=.15;
+ const state=!b.onGround?'jump':b.landTimer>0?'landing':b.talkTimer>0?'talk':Math.abs(b.vx)>30?'run':'idle';
+ if(b.animState!==state){b.animState=state;b.anim=0;}
+ b.anim=(b.anim||0)+dt*(state==='run'?10:state==='talk'?4:3);
+}
+function followCompanion(dt){
+ if(!luliPresent||!companion||parked)return;
+ const b=companion,oldX=b.x,oldY=b.y,wasGrounded=!!b.onGround;
+ history.unshift({x:player.x,y:player.y,face:player.face,ground:player.onGround});
+ if(history.length>32)history.pop();
+ const target=history[Math.min(history.length-1,11)];
+ const moving=Math.abs(player.vx)>15||Math.abs(target.x-player.x)>12;
+ const desired=clamp(target.x-(moving?0:player.face*56),1,level.width-b.w);
+ const blocks=solids(),P=LuliPuzzles;
+ // A delayed replay keeps the cooperative double jump possible, but never
+ // moves through a solid, closed door, or crate.
+ P.sweep(b,clamp((desired-b.x)*12,-380,380)*dt,'x',blocks);
+ const dy=clamp((target.y-b.y)*12,-850,850)*dt;
+ P.moveY(b,dy,blocks,surfaces());
+ b.x=clamp(b.x,1,level.width-b.w);b.y=Math.max(0,b.y);
+ b.vx=(b.x-oldX)/dt;b.vy=(b.y-oldY)/dt;
+ b.onGround=supported(b);b.airJump=!b.onGround;
+ if(Math.abs(b.vx)>15)b.face=Math.sign(b.vx);else b.face=target.face;
+ animateBody(b,dt,wasGrounded);
+ // Repair only when the assist is invalid, not merely separated by a puzzle.
+ if(!clearBody(b)||b.y>(level.height||540)+80){
+  const replacement=safeReunion();if(replacement){companion=replacement;history=[];}
+ }
+}
+function movePuzzles(dt){const P=LuliPuzzles;for(const c of puzzle.filter(o=>o.kind==='crate')){c.vy=Math.min(1000,c.vy+GRAVITY*dt);P.moveY(c,c.vy*dt,[...solids(c),player,...(parked&&companion?[companion]:[])],surfaces());if(c.y>(level.height||540)+80){c.x=c.homeX;c.y=c.homeY;c.vy=0;}}if(parked&&companion){const was=companion.onGround;companion.vy=Math.min(1000,companion.vy+GRAVITY*dt);P.moveY(companion,companion.vy*dt,solids(),surfaces());companion.vx=0;animateBody(companion,dt,was);if(companion.y>(level.height||540)+80)recall();}}
 function moveHeroX(dx){const P=LuliPuzzles;const blocks=solids();const r=P.sweep(player,dx,'x',blocks);if(r.hit?.kind==='crate'&&active==='chris'){const crate=r.hit;const remaining=dx-r.travel;const pushed=P.sweep(crate,remaining,'x',[...solids(crate),...(parked&&companion?[companion]:[]),{x:-1000,y:-10000,w:1000,h:20000},{x:level.width,y:-10000,w:1000,h:20000}]);P.sweep(player,pushed.travel,'x',solids());}player.x=clamp(player.x,1,level.width-player.w);}
 function startLevel(ix,keepHearts=false){levelStartScore=score;checkpointState=null;startState=null;activatedCheckpoints=new Set();levelIndex=ix;level=LEVELS[ix];gateRequiresBoss=level.editorRequiresBoss;FLOOR=(level.height||540)-78;mode='playing';active='luli';luliPresent=true;heart=keepHearts?Math.min(3,heart+1):3;
  player={x:level.spawn??95,y:Math.max(0,(level.spawnY??FLOOR)-65),vx:0,vy:0,w:39,h:65,onGround:true,face:1,anim:0,landTimer:0,talkTimer:0};companion=bodyAt(Math.max(1,player.x-50),player.y,1);
  cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,(level.height||540)-view.h));checkpointX=level.spawn??95;checkpointY=level.spawnY??FLOOR;invulnerable=0;finishOnce=false;nearNPC=null;coyote=.1;jumpBuffer=0;playerTime=0;makeObjects();
  overlay.classList.add('hidden');hud.classList.remove('hidden');$('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');
- keys.left=keys.right=keys.jump=false;storySeen=new Set();storyCooldown=1.2;startState=captureState('start',safeStartPair());updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
+ keys.left=keys.right=keys.jump=false;storySeen=new Set();storyCooldown=1.2;const initial=safeStartPair();player=initial.player;companion=initial.companion;for(const b of [player,companion]){b.onGround=supported(b);b.airJump=!b.onGround;}cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,level.height-view.h));startState=captureState('start',initial);updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
 }
 function updateHUD(){if(!level)return;$('levelText').textContent=(levelIndex+1)+'. '+level.name;$('duoText').textContent=luliPresent?(active.toUpperCase()+' • '+(parked?otherHero().toUpperCase()+' AGUARDA':'DUPLA')):'CHRIS SOZINHO';
  const status=$('duoText').parentElement;status.classList.toggle('rescuing',!luliPresent);$('heartText').textContent='♥ '.repeat(heart).trim()+' ♡'.repeat(3-heart);
@@ -122,7 +177,7 @@ function updateHUD(){if(!level)return;$('levelText').textContent=(levelIndex+1)+
 function showDialogue(lines,returnTo='playing',after=null){if(!lines?.length)return;duoEnd(true);jumpBuffer=0;if(player)player.talkTimer=.5;dialogue=lines;dialogIndex=0;dialogReturn=returnTo;dialogAction=after;mode='dialog';dialog.classList.remove('hidden');interEl.classList.add('hidden');renderDialogue()}
 const moods={sorrindo:'♥',agradecido:'♥',pensando:'?',seria:'✦',serio:'✦',irritado:'!',suspirando:'…',feliz:'♥',surpresa:'!',surpreso:'!',dica:'✧',história:'✦',confiante:'★',preocupado:'?',determinado:'⚡',fim:'♡'};
 const normalizeMood=m=>String(m||'normal').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-function renderDialogue(){const d=dialogue[dialogIndex];if(!d)return;
+function renderDialogue(){const d=dialogue[dialogIndex];if(!d)return;if(player)player.talkTimer=d.who===active?.5:0;if(companion)companion.talkTimer=d.who===otherHero()?.5:0;
  $('dialogSpeaker').textContent=npcList.find(n=>n.type===d.who&&n.studio?.customName)?.studio.customName||ACTORS[d.who]||d.who;$('dialogMood').textContent=d.mood;$('dialogText').textContent=d.text;$('emotionSticker').textContent=moods[d.mood]||'✦';
  const im=$('dialogPortrait');const who=d.who;dialog.dataset.speaker=who;const mood=normalizeMood(d.mood);const map={luli:{neutro:'normal',sorrindo:'feliz',agradecido:'feliz',preocupado:'pensando',preocupada:'pensando',confiante:'feliz',determinado:'seria',serio:'seria',irritado:'seria',surpreso:'surpresa'},chris:{neutro:'normal',feliz:'sorrindo',confiante:'sorrindo',surpresa:'pensando',surpreso:'pensando',preocupado:'pensando',preocupada:'pensando',serio:'normal',seria:'normal',determinado:'normal'},narrator:{historia:'serio',dica:'serio',fim:'feliz',neutro:'serio',normal:'serio'}};
  const chosen=portraitMoods[who]?.includes(mood)?mood:(map[who]?.[mood]|| (who==='narrator'?'serio':'normal'));
@@ -130,7 +185,7 @@ function renderDialogue(){const d=dialogue[dialogIndex];if(!d)return;
  const fallback=who==='narrator'?'serio':'normal';im.onerror=()=>{im.onerror=null;if(portraitMoods[who]&&chosen!==fallback)im.src=assetPath(who+'_'+fallback);else im.style.visibility='hidden';};im.style.visibility='visible';im.src=assetURL(src);im.alt=`Retrato de ${ACTORS[who]||who}`;
  const box=im.parentElement;box.style.background=d.mood==='preocupado'?'radial-gradient(circle at 50% 30%,#65799e,#3a2f63 78%)':'radial-gradient(circle at 50% 30%,#a4799a,#4a3264 78%)';beep(500,.035,'sine',.025,120);
 }
-function nextDialogue(){if(mode!=='dialog')return;dialogIndex++;if(dialogIndex<dialogue.length){renderDialogue();return}dialog.classList.add('hidden');const cb=dialogAction;dialogAction=null;mode=dialogReturn;if(cb)cb();if(mode==='playing')storyCooldown=1.2;if(mode==='won')showEndingPanel()}
+function nextDialogue(){if(mode!=='dialog')return;dialogIndex++;if(dialogIndex<dialogue.length){renderDialogue();return}dialog.classList.add('hidden');if(player)player.talkTimer=0;if(companion)companion.talkTimer=0;const cb=dialogAction;dialogAction=null;mode=dialogReturn;if(cb)cb();if(mode==='playing')storyCooldown=1.2;if(mode==='won')showEndingPanel()}
 function showMenu(){mode='menu';dialog.classList.add('hidden');hud.classList.add('hidden');overlay.classList.remove('hidden');overlay.innerHTML=ORIGINAL_MENU;
  $('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');toastEl.classList.remove('shown');const cont=$('continueBtn');if(progress.unlocked>0){cont.classList.remove('hidden');cont.textContent=`Continuar • fase ${progress.unlocked+1}`;}const status=$('campaignStatus');if(status)status.textContent=progress.completed?'Aventura concluída • 8/8':`${Math.min(progress.unlocked,7)} de 8 fases concluídas`;}
 function panel(kicker,title,description,buttons){overlay.classList.remove('hidden');overlay.innerHTML=`<div class="overlay-bg-stars"></div><section class="menu-panel"><div class="menu-eyebrow">${kicker}</div><h1>${title}</h1><p class="menu-description" style="max-width:510px;font-size:15px;margin:16px auto 20px">${description}</p><div class="menu-buttons">${buttons.map((b,i)=>`<button class="${i?'secondary-btn':'primary-btn'}" data-action="${b.action}">${b.label}</button>`).join('')}</div></section>`}
@@ -298,20 +353,16 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
  const accel=input?(player.onGround?2400:1550):(player.onGround?2700:950);
  player.vx+=clamp(targetV-player.vx,-accel*dt,accel*dt);
  if(!input&&Math.abs(player.vx)<2)player.vx=0;
- player.landTimer=Math.max(0,(player.landTimer||0)-dt);
- player.talkTimer=Math.max(0,(player.talkTimer||0)-dt);
+ 
  const previousBottom=player.y+player.h; const wasAirborne=!player.onGround;
- // Record Luli's trail before movement; Chris replicates the path instead of sticking to one side.
- if(luliPresent&&!parked){history.unshift({x:player.x,y:player.y,face:player.face});if(history.length>23)history.pop()}
- movePuzzles(dt);moveHeroX(player.vx*dt);
+
+ movePuzzles(dt);const previousX=player.x;moveHeroX(player.vx*dt);if(Math.abs(player.x-previousX)<.001)player.vx=0;
  if(jumpBuffer>0&&(player.onGround||coyote>0)){player.vy=active==='luli'?-735:-707;jumpBuffer=0;coyote=0;player.onGround=false;beep(460,.11,'sine',.045,225)}
  else if(jumpBuffer>0&&active==='luli'&&!player.airJump&&!player.onGround){player.airJump=true;player.vy=-660;jumpBuffer=0;spawnBurst(player.x+19,player.y+50,'#ffc3ec',8);}
  if(!keys.jump&&player.vy<-250)player.vy+=GRAVITY*dt*.6;
  player.vy=clamp(player.vy+GRAVITY*dt,-900,1200);LuliPuzzles.moveY(player,player.vy*dt,solids(),surfaces());if(player.onGround){coyote=.10;player.airJump=false;}
- if(player.onGround&&wasAirborne){player.landTimer=.15;player.anim=0;}
- player.anim+=dt*(Math.abs(player.vx)>30?10:3);
- if(luliPresent&&companion&&!parked){const target=history[Math.min(history.length-1,11)]||{x:player.x-65,y:player.y,face:player.face};const off=Math.abs(player.vx)<15?player.face*61:0;const desiredX=target.x-off;
- const follow=Math.min(1,dt*10);LuliPuzzles.sweep(companion,clamp(desiredX-companion.x,-110,110)*follow,'x',solids());LuliPuzzles.sweep(companion,(target.y-companion.y)*follow,'y',solids());companion.face=target.face;companion.anim+=dt*(Math.abs(player.vx)>30?9:2);}
+ animateBody(player,dt,!wasAirborne);
+ followCompanion(dt);
  LuliPuzzles.signal(puzzle.filter(o=>o.kind==='plate'),puzzle.filter(o=>o.kind==='door'),[player,...(parked&&companion?[companion]:[]),...puzzle.filter(o=>o.kind==='crate')]);
  if(player.y>(level.height||540)+95){if(invulnerable>0)fallRecovery();else hurt('fall');return}
  // Enemy AI and collisions: same world geometry as the heroes.
@@ -466,19 +517,19 @@ function drawSheetImage(im,cx,bottom,w,h,face,row,frame){
  const painted=LuliSheets.paint(ctx,im,row,frame,-w/2,-h+4,w,h,face<0);
  ctx.restore();return painted;
 }
-function drawPlayable(char,x,y,face,anim,walking,airborne,translucent=1){
+function drawPlayable(char,body,translucent=1){
+ const {x,y,face,anim}=body;const walking=Math.abs(body.vx)>30,airborne=!body.onGround;
  // All hero frames are exactly 64×64 px with anchor (32,61). World-space feet do not move between frames.
  const hero=(char==='luli');
- const isPlayer=player&&Math.abs(player.x-x)<2&&active===char;
  let key;
- if(airborne){const vy=isPlayer?player.vy:(player?.vy||0);key='jump'+(vy<-300?1:vy<-50?2:vy>100?3:2);}
- else if(isPlayer&&(player.landTimer||0)>0)key='landing'+(player.landTimer>.07?0:1);
- else if(isPlayer&&(player.talkTimer||0)>0)key='talk'+(Math.floor(clock*4)%4);
+ if(airborne){const vy=body.vy||0;key='jump'+(vy<-500?0:vy<-150?1:vy<100?2:3);}
+ else if((body.landTimer||0)>0)key='landing'+(body.landTimer>.07?0:1);
+ else if((body.talkTimer||0)>0)key='talk'+(Math.floor(clock*4)%4);
  else if(walking)key='run'+(Math.floor(anim)%6);
  else key='idle'+(Math.floor(anim)%4);
  const im=images[char+'_sheet'];
  const scale=hero?1.48:1.43, dw=64*scale,dh=64*scale;
- const footX=x+player.w/2,footY=y+player.h;
+ const footX=x+body.w/2,footY=y+body.h;
  const match=/^(idle|run|jump|landing|talk)([0-9]+)$/.exec(key);
  const state=match?.[1]||'idle',frame=Number(match?.[2]||0);
  const row=LuliSheets.HERO[state].row;
@@ -556,8 +607,8 @@ function draw(){ctx.setTransform(canvas.width/view.w,0,0,canvas.height/view.h,0,
  for(const npc of npcList)if(npc.x>cameraX-110&&npc.x<cameraX+view.w+110)drawNPCNew(npc);
  for(const e of enemies)if(e.alive&&e.x>cameraX-150&&e.x<cameraX+view.w+150)drawEnemyNew(e);
  if(rescue)drawRescue();
- if(companion&&luliPresent){drawPlayable(otherHero(),companion.x,companion.y,companion.face,companion.anim,!parked&&Math.abs(player.vx)>30,parked&&!companion.onGround,.98);if(parked&&companion){ctx.fillStyle='#fff4c7';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('AGUARDANDO',companion.x+19,companion.y-18)}}
- if(player&&(!invulnerable||Math.floor(clock*13)%2))drawPlayable(active,player.x,player.y,player.face,player.anim,Math.abs(player.vx)>30,!player.onGround);
+ if(companion&&luliPresent){drawPlayable(otherHero(),companion,.98);if(parked&&companion){ctx.fillStyle='#fff4c7';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('AGUARDANDO',companion.x+19,companion.y-18)}}
+ if(player&&(!invulnerable||Math.floor(clock*13)%2))drawPlayable(active,player);
  drawParticles();
  if(false&&player){
   ctx.strokeStyle='#ff6aa9';ctx.lineWidth=2;ctx.strokeRect(player.x,player.y,player.w,player.h);
