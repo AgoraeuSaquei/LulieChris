@@ -91,13 +91,15 @@ function makeObjects(){parked=false;duoPress=null;puzzle=(level.editorEntities||
  for(const [x,y,w] of level.platforms){fruits.push({x:x+w*.45,y:y-32,found:false,type:Math.floor(hash(x*2)*4),phase:x*.03});if(w>158)fruits.push({x:x+w*.76,y:y-32,found:false,type:Math.floor(hash(x*2.3)*4),phase:x*.024})}
  }
  if(level.editorEntities){for(const f of level.editorEntities.filter(o=>o.kind==='fruit'))fruits.push({x:f.x,y:f.y,found:false,type:0,phase:0,value:f.value||1});editorEvents=level.editorEntities.filter(o=>o.kind==='event').map(o=>({...o,used:false}));}
- enemies=level.enemies.map(([type,x],i)=>{const boss=type==='pumpkin';const data=level.editorEntities?.find(o=>o.kind==='enemy'&&o.type===type&&Math.abs(o.x-x)<1);return {type,x,home:x,homeY:data?.y,y:type==='bat'?FLOOR-126:type==='pepper'?FLOOR-58:type==='vine'?FLOOR-58:boss?FLOOR-80:FLOOR-49,w:boss?85:type==='bat'?61:type==='vine'?67:50,h:boss?80:type==='bat'?54:type==='vine'?59:type==='pepper'?55:48,phase:i*.8,dir:i%2?1:-1,range:boss?55:70+hash(i+10)*35,hp:data?.hp|| (boss?3:1),ai:data?.ai||null,spriteId:data?.spriteId||'',alive:true,stun:0,attack:0}});
+ enemies=level.enemies.map(([type,x],i)=>{const boss=type==='pumpkin';const data=level.editorEntities?.find(o=>o.kind==='enemy'&&o.type===type&&Math.abs(o.x-x)<1);return {type,x,home:x,homeY:data?.y,y:type==='bat'?FLOOR-126:type==='pepper'?FLOOR-58:type==='vine'?FLOOR-58:boss?FLOOR-80:FLOOR-49,w:boss?85:type==='bat'?61:type==='vine'?67:50,h:boss?80:type==='bat'?54:type==='vine'?59:type==='pepper'?55:48,phase:i*.8,dir:i%2?1:-1,range:boss?55:70+hash(i+10)*35,hp:Number.isInteger(data?.hp)&&data.hp>0?data.hp:(boss?3:1),ai:data?.ai||null,spriteId:data?.spriteId||'',alive:true,stun:0,attack:0}});
+ const world=enemyWorld();for(const e of enemies)LuliEnemies.initialize(e,world);
  npcList=level.npcs.map(([type,x])=>({type,x,used:false,phase:hash(x)*10,studio:level.editorEntities?.find(o=>o.kind==='npc'&&o.type===type&&Math.abs(o.x-x)<1)}));
 }
 function otherHero(){return active==='luli'?'chris':'luli'}
 function bodyAt(x,y,face=1){return {x,y,w:39,h:65,vx:0,vy:0,onGround:false,face,anim:0,landTimer:0,talkTimer:0,airJump:false};}
 function surfaces(){return [...level.ground.map(([x,w])=>({x,y:FLOOR,w,h:120})),...level.platforms.map(([x,y,w])=>({x,y,w,h:12})),...puzzle.filter(o=>o.kind==='plate')];}
 function solids(except){return [...puzzle.filter(o=>o!==except&&(o.kind==='solid'||o.kind==='crate'||(o.kind==='door'&&!o.open))),...level.ground.map(([x,w])=>({x,y:FLOOR,w,h:120}))];}
+function enemyWorld(){return {width:level.width,height:level.height||540,floor:FLOOR,solids:solids(),surfaces:surfaces()};}
 function clearBody(b){return b.x>=1&&b.x+b.w<=level.width&&b.y>=0&&b.y+b.h<=(level.height||540)&&!solids().some(o=>LuliPuzzles.overlap(b,o));}
 function nearbyBody(x,y,face){for(const dy of [0,-16,-32,-64,-96])for(const dx of [0,-48,48,-96,96]){const b=bodyAt(clamp(x+dx,1,level.width-39),y+dy,face);if(clearBody(b)&&!LuliPuzzles.overlap(b,player))return b;}return null;}
 function recall(){const b=nearbyBody(player.x-player.face*48,player.y,player.face);if(!b){toast('Sem espaço para chamar o companheiro.');return;}companion=b;parked=false;history=[];spawnBurst(b.x+19,b.y+28,'#bde9ff',12);toast('Dupla reunida!');}
@@ -217,23 +219,13 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
  const follow=Math.min(1,dt*10);LuliPuzzles.sweep(companion,clamp(desiredX-companion.x,-110,110)*follow,'x',solids());LuliPuzzles.sweep(companion,(target.y-companion.y)*follow,'y',solids());companion.face=target.face;companion.anim+=dt*(Math.abs(player.vx)>30?9:2);}
  LuliPuzzles.signal(puzzle.filter(o=>o.kind==='plate'),puzzle.filter(o=>o.kind==='door'),[player,...(parked&&companion?[companion]:[]),...puzzle.filter(o=>o.kind==='crate')]);
  if(player.y>(level.height||540)+95){if(invulnerable>0){player.x=checkpointX;player.y=checkpointY-player.h;player.vy=0;player.vx=0;}else hurt('fall');return}
- // Enemy AI and collisions
+ // Enemy AI and collisions: same world geometry as the heroes.
+ const world=enemyWorld();
  for(const e of enemies){if(!e.alive)continue;e.phase+=dt;e.stun=Math.max(0,e.stun-dt);e.attack=Math.max(0,e.attack-dt);
- const baseSpeed={plum:46,lemon:88,pepper:43,pumpkin:42,bat:66,vine:0}[e.type];
- if(e.ai){const ai=e.ai,modeAI=ai.mode||'patrol',spd=+ai.speed||0,range=+(ai.range??90);
- if(e.stun<=0){if(modeAI==='chase'){const dx=player.x-e.x;if(Math.abs(dx)<(+ai.aggro||195)){e.dir=Math.sign(dx)||1;e.x+=e.dir*spd*dt}else{e.x+=e.dir*spd*dt*.4}}else if(modeAI!=='stationary')e.x+=e.dir*spd*dt;
- if(modeAI!=='chase'&&Math.abs(e.x-e.home)>range){e.dir*=-1;e.x=clamp(e.x,e.home-range,e.home+range)}}
- if(modeAI==='jump')e.y=(e.homeY??FLOOR)-e.h-Math.abs(Math.sin(e.phase*Math.PI/(+ai.jumpInterval||1.5)))*54;
- else if(modeAI==='fly')e.y=(e.homeY??FLOOR-133)-e.h*.5+Math.sin(e.phase*4)*22;
- else e.y=(e.homeY??FLOOR)-e.h;
- }else{
- if(e.stun<=0){if(e.type!=='vine')e.x+=e.dir*baseSpeed*dt;if(Math.abs(e.x-e.home)>e.range){e.dir*=-1;e.x=clamp(e.x,e.home-e.range,e.home+e.range)}}
- if(e.type==='pepper'){const bounce=Math.max(0,Math.sin(e.phase*3.4))*43;e.y=FLOOR-57-bounce}
- if(e.type==='bat')e.y=FLOOR-144+Math.sin(e.phase*3.8)*34;
- if(e.type==='lemon'){e.y=FLOOR-e.h+Math.sin(e.phase*5)*1.5;if(Math.abs(player.x-e.x)<155&&Math.sin(e.phase*5)>0.85)e.attack=.4}
- if(e.type==='vine'){e.y=FLOOR-e.h;e.attack=(Math.sin(e.phase*2.7)>.35)?0.25:0}
- if(e.type==='pumpkin'){e.y=FLOOR-e.h}
- }
+ if(!LuliEnemies.step(e,dt,world,player))continue;
+ // Preserve existing fallback attack visuals; combat rules are unchanged.
+ if(!e.ai&&e.type==='lemon'&&Math.abs(player.x-e.x)<155&&Math.sin(e.phase*5)>0.85)e.attack=.4;
+ if(!e.ai&&e.type==='vine')e.attack=(Math.sin(e.phase*2.7)>.35)?0.25:0;
  if(invulnerable>0)continue;
  const px=player.x,py=player.y,ex=e.x,ey=e.y;
  const overlap=px+player.w>ex+8&&px<ex+e.w-7&&py+player.h>ey+7&&py<ey+e.h-5;
@@ -415,7 +407,7 @@ function drawEnemyNew(e){if(!e.alive)return;ctx.save();const wobble=Math.sin(e.p
  const row=e.attack>0?2:1;if(!drawSheetImage(spriteForEntity('enemy',e.type,e),e.x+e.w/2,e.y+e.h+wobble,dim[0],dim[1],e.dir,row,Math.floor(e.phase*7)%(row===2?3:4)))ellipse(e.x+e.w/2,e.y+e.h/2,dim[0]*.33,dim[1]*.34,'#9a5b99');
  if(e.type==='lemon'&&(e.attack>0||Math.sin(e.phase*5)>.9)){ctx.strokeStyle='#ffef65b8';ctx.lineWidth=3;const x=e.x+e.w/2,y=e.y+e.h/2;ctx.beginPath();ctx.moveTo(x-35,y-20);ctx.lineTo(x-46,y-8);ctx.lineTo(x-35,y-4);ctx.moveTo(x+35,y-20);ctx.lineTo(x+46,y-8);ctx.lineTo(x+35,y-4);ctx.stroke()}
  if(e.type==='vine'&&e.attack>0){ctx.strokeStyle='#87b361';ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(e.x+e.w/2,e.y+35);ctx.quadraticCurveTo(e.x+e.w/2+Math.sin(e.phase*4)*28,e.y-25,e.x+e.w/2+Math.sin(e.phase*4)*51,e.y-9);ctx.stroke()}
- if(e.type==='pumpkin'){ctx.fillStyle='#362946aa';ctx.fillRect(e.x-2,e.y-18,89,7);ctx.fillStyle='#ffbf73';ctx.fillRect(e.x-1,e.y-18,87*(e.hp/3),6)}
+ if(e.type==='pumpkin'){ctx.fillStyle='#362946aa';ctx.fillRect(e.x-2,e.y-18,89,7);ctx.fillStyle='#ffbf73';ctx.fillRect(e.x-1,e.y-18,87*LuliEnemies.healthRatio(e),6)}
  ctx.restore()}
 function drawRescue(){if(!rescue)return;const x=rescue.x,y=rescue.y+Math.sin(clock*4.5)*9;
  ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(clock*1.8)*.17);ctx.shadowColor='#ff82d6';ctx.shadowBlur=28;
