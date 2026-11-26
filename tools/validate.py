@@ -220,7 +220,6 @@ def validate_campaign(c,r):
             if counts.get(k,0)!=1: r.error('REQUIRED_ENTITY',where,f'Esperado exatamente um {k}')
         if not counts.get('ground'): r.warn('NO_GROUND',where,'Nenhum segmento de chão')
         if not counts.get('checkpoint'): r.warn('NO_CHECKPOINT',where,'Nenhum checkpoint configurado')
-        if counts.get('checkpoint',0)>1: r.warn('MULTIPLE_CHECKPOINTS',where,'Motor de referência lê apenas o primeiro checkpoint')
         for ch,loc in doors:
             if ch not in plates: r.error('UNLINKED_DOOR',loc,f'Porta sem placa no canal {ch}')
         for a,loc in crates:

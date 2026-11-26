@@ -1,0 +1,4 @@
+# Operação Fundação — Etapa 03
+Oito checkpoints novos (fases 2, 4, 5, 6, 7, 8), snapshots em memória de caixas, portas, frutas, inimigos, NPCs, eventos, diálogos e pontuação. Checkpoints exigem dupla reunida, chão e espaço seguro; derrota total permite retornar com três corações ou recomeçar. Queda não fatal restaura estado, mantém corações restantes e inicia resgate. Cristal busca posição acessível; após oito segundos acompanha Chris e permite recuperação segura quando no chão. Sem espaço para dois, retorno ao snapshot. Portais exigem dupla reunida e chefe derrotado quando aplicável. Parceiro estacionado exige Q/Dupla. Formato de mapas e save persistente preservados; nenhum sprite alterado. A caixa sobreposta à porta da fase 7 permanece intacta. Posições verificadas geometricamente; percurso integral e homologação em navegador real pendentes.
+
+Testes: node tests/test_progression.cjs; node tests/test_enemy_physics.cjs.

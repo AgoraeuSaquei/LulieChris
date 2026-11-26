@@ -1,0 +1,39 @@
+function makeProgressRuntime(game,campaign,story,P,E){
+  const elements=new Map(),rects=[];
+  const gradient={addColorStop(){}};
+  const ctx=new Proxy({fillStyle:'',fillRect(...args){rects.push({color:this.fillStyle,args});},createLinearGradient(){return gradient;},createRadialGradient(){return gradient;}},{get(o,k){return k in o?o[k]:()=>{};}});
+  function element(id){
+    if(!elements.has(id))elements.set(id,{id,innerHTML:'',textContent:'',style:{},dataset:{},classList:{add(){},remove(){},toggle(){}},parentElement:{style:{},classList:{toggle(){}}},addEventListener(){},getContext(){return ctx;},getBoundingClientRect(){return {width:960,height:540};},clientWidth:960,setPointerCapture(){}});
+    return elements.get(id);
+  }
+  const window={LULI_CAMPAIGN:campaign,LULI_STORY:story,addEventListener(){}};
+  const document={getElementById:element,addEventListener(){},hidden:false};
+  const Image=class{constructor(){this.complete=false;this.naturalWidth=0;}};
+  const LuliSheets={ready(){return false;},paint(){return false;},HERO:{idle:{row:0},run:{row:1},jump:{row:2},landing:{row:3},talk:{row:4}}};
+  const marker='setup();\n})();';
+  if(!game.includes(marker))throw Error('Runtime test hook location changed');
+  const instrumented=game.replace(marker,`setup();window.__test={startLevel,nextDialogue,update,draw,drawEnemy:drawEnemyNew,getEnemies:()=>enemies,getWorld:enemyWorld,getMode:()=>mode,state:()=>({level,player,companion,puzzle,fruits,enemies,npcList,editorEvents,score,levelFruit,heart,active,luliPresent,parked,rescue,checkpointState,startState,activated:activatedCheckpoints,gateRequiresBoss}),position:(x,y)=>{player.x=x;player.y=y;player.vx=0;player.vy=0;player.onGround=true;},reunite:()=>{luliPresent=true;parked=false;companion=pairAt(player,false)?.companion||bodyAt(player.x-48,player.y);},duo:(present,waiting)=>{luliPresent=present;parked=waiting;if(!present)companion=null;},activate:activateCheckpoint,stableBody,hasPair:()=>!!pairAt(player,false),gameOver,restartCheckpoint,checkPortal,hurt,updateRescue,setScore:(s,f)=>{score=s;levelFruit=f;},setHeart:h=>{heart=h;invulnerable=0;},restartLevel:()=>{score=levelStartScore;startLevel(levelIndex);}};\n})();`);
+  const fn=new Function('window','document','Image','requestAnimationFrame','localStorage','devicePixelRatio','performance','LuliPuzzles','LuliEnemies','LuliSheets','setTimeout',instrumented);
+  fn(window,document,Image,()=>{}, {getItem(){return null;},setItem(){}},1,{now(){return 1000;}},P,E,LuliSheets,()=>{});
+  return {...window.__test,clearRects:()=>{rects.length=0;},getRects:()=>rects};
+}
+
+function runProgressionTests(P,E,campaign,game,story){
+ const results=[],assert=(v,m='assertion failed')=>{if(!v)throw Error(m)},test=(n,f)=>{try{f();results.push(n)}catch(e){throw Error(n+': '+e.message)}};
+ const r=makeProgressRuntime(game,campaign,story,P,E),s=()=>r.state(),begin=i=>{r.startLevel(i);let n=0;while(r.getMode()==='dialog'&&n++<30)r.nextDialogue();},pos=(x,y)=>r.position(x,y-65),atPortal=()=>{const l=s().level;for(const dy of [0,-18,-32,-48,-64,-80,16,32,48,64,80])for(const dx of [0,-16,16,-32,32,-48,48]){pos(l.gate+dx,l.gateY+dy);if(r.hasPair()){r.reunite();return;}}throw Error('no clear portal position '+l.name);};
+ test('eight markers in six levels',()=>assert(campaign.levels.map(l=>l.entities.filter(e=>e.kind==='checkpoint').length).join(',')==='0,1,0,1,1,2,2,1'));
+ test('all markers have supported clear geometry',()=>{for(let i=0;i<8;i++){begin(i);for(const cp of s().level.checkpoints){pos(cp.x,cp.y);assert(r.stableBody(s().player),cp.id);}}});
+ test('all start snapshots have valid player and partner',()=>{for(let i=0;i<8;i++){begin(i);let a=s().startState;assert(r.stableBody(a.player)&&r.stableBody(a.companion)&&!P.overlap(a.player,a.companion),'phase '+(i+1));}});
+ test('checkpoint requires reunited duo',()=>{begin(3);const cp=s().level.checkpoints[0];pos(cp.x,cp.y);r.duo(false,false);assert(!r.activate(cp));r.duo(true,true);assert(!r.activate(cp));});
+ test('snapshot restores crate door fruit score',()=>{begin(5);const cp=s().level.checkpoints[0];pos(cp.x,cp.y);r.reunite();const crate=s().puzzle.find(o=>o.kind==='crate'),door=s().puzzle.find(o=>o.kind==='door'),fruit=s().fruits[0];crate.x=1125;door.open=true;fruit.found=true;r.setScore(40,4);assert(r.activate(cp));crate.x=999;door.open=false;fruit.found=false;r.setScore(90,9);r.gameOver();r.restartCheckpoint();assert(s().puzzle.find(o=>o.kind==='crate').x===1125&&s().puzzle.find(o=>o.kind==='door').open&&s().fruits[0].found&&s().score===40&&s().levelFruit===4&&s().heart===3);});
+ test('latest of multiple checkpoints restored',()=>{begin(5);const [a,b]=s().level.checkpoints;for(const cp of [a,b]){pos(cp.x,cp.y);r.reunite();assert(r.activate(cp),cp.id);}r.gameOver();r.restartCheckpoint();assert(s().activated.size===2&&s().checkpointState.id===b.id&&s().player.x===b.x);});
+ test('nonfatal fall preserves remaining life and starts rescue',()=>{begin(3);const cp=s().level.checkpoints[0];pos(cp.x,cp.y);r.reunite();assert(r.activate(cp));r.setHeart(2);r.hurt('fall');assert(s().heart===1&&!s().luliPresent&&s().active==='chris'&&s().rescue&&s().player.x===cp.x);});
+ test('rescue avoids closed wall and can recover automatically',()=>{begin(2);pos(500,462);r.reunite();r.hurt('enemy');assert(!s().luliPresent&&s().rescue&&s().rescue.x<576);for(let i=0;i<600&&!s().luliPresent;i++)r.updateRescue(1/60);assert(s().luliPresent&&!P.overlap(s().player,s().companion));});
+ test('portal rejects absent or parked companion',()=>{begin(0);atPortal();r.duo(false,false);assert(!r.checkPortal());r.duo(true,true);assert(!r.checkPortal());});
+ test('seven regular portal conditions accept duo',()=>{for(let i=0;i<7;i++){begin(i);atPortal();assert(r.checkPortal(),'phase '+(i+1));assert(r.getMode()==='levelend');}});
+ test('boss gate requires defeat and duo',()=>{begin(7);atPortal();let b=s().enemies.find(e=>e.type==='pumpkin');assert(b.hp===8&&b.maxHp===8&&!r.checkPortal());b.alive=false;b.hp=0;r.duo(false,false);assert(!r.checkPortal());r.reunite();assert(r.checkPortal());begin(7);assert(s().gateRequiresBoss);});
+ test('restart clears failed attempt score',()=>{r.setScore(20,0);begin(0);r.setScore(90,9);r.restartLevel();assert(s().score===20&&s().levelFruit===0);});
+ test('enemy HP and NPC consumption preserved',()=>{begin(7);const cp=s().level.checkpoints[0];pos(cp.x,cp.y);r.reunite();const boss=s().enemies.find(e=>e.type==='pumpkin');boss.hp=5;s().npcList[0].used=true;for(const e of s().enemies)if(e.type==='bat')e.alive=false;assert(r.activate(cp));boss.hp=1;s().npcList[0].used=false;r.gameOver();r.restartCheckpoint();assert(s().enemies.find(e=>e.type==='pumpkin').hp===5&&s().npcList[0].used);});
+ return {passed:results.length,tests:results};
+}
+if(typeof module!=='undefined'&&require.main===module){const fs=require('node:fs'),path=require('node:path'),read=f=>fs.readFileSync(path.resolve(__dirname,'..',f),'utf8');require('../puzzles.js');require('../enemies.js');const parse=(s,a,z)=>JSON.parse(s.slice(s.indexOf(a),s.lastIndexOf(z)+1));const result=runProgressionTests(globalThis.LuliPuzzles,globalThis.LuliEnemies,parse(read('levels.js'),'{','}'),read('game.js'),parse(read('story.js'),'[',']'));for(const n of result.tests)console.log('PASS — '+n);console.log(result.passed+' testes');}

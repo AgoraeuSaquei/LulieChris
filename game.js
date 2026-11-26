@@ -54,7 +54,7 @@ function studioLevel(raw,i){
  const npcs=ents.filter(e=>e.kind==='npc').map(e=>[e.type,+e.x]);
  const enemies=ents.filter(e=>e.kind==='enemy').map(e=>[e.type,+e.x]);
  const gate=find('gate'),check=find('checkpoint'),spawn=find('spawn');
- return {name:String(raw.name||'Fase do Editor').slice(0,80),tag:String(raw.tag||''),width:clamp(+raw.width||2740,480,32000),height:clamp(+raw.height||540,540,2160),theme:Math.min(2,Math.max(0,+raw.theme||0)),ground,platforms,npcs,enemies,checkpoint:check?+check.x:null,checkpointY:check&&Number.isFinite(+check.y)?+check.y:null,gate:gate?+gate.x:null,gateY:gate&&Number.isFinite(+gate.y)?+gate.y:null,spawn:spawn?+spawn.x:95,spawnY:spawn&&Number.isFinite(+spawn.y)?+spawn.y:null,intro:i===0?'intro':null,editorEntities:ents,editorRequiresBoss:!!gate?.requiresBoss};
+ return {name:String(raw.name||'Fase do Editor').slice(0,80),tag:String(raw.tag||''),width:clamp(+raw.width||2740,480,32000),height:clamp(+raw.height||540,540,2160),theme:Math.min(2,Math.max(0,+raw.theme||0)),ground,platforms,npcs,enemies,checkpoints:ents.filter(e=>e.kind==='checkpoint').map(e=>({id:e.id,x:+e.x,y:+e.y})),checkpoint:check?+check.x:null,checkpointY:check&&Number.isFinite(+check.y)?+check.y:null,gate:gate?+gate.x:null,gateY:gate&&Number.isFinite(+gate.y)?+gate.y:null,spawn:spawn?+spawn.x:95,spawnY:spawn&&Number.isFinite(+spawn.y)?+spawn.y:null,intro:i===0?'intro':null,editorEntities:ents,editorRequiresBoss:!!gate?.requiresBoss};
 }
 const STATE_KEY='luli_chris_de_volta_para_casa_v1';
 let progress={unlocked:0,completed:false,best:0,muted:false};
@@ -63,6 +63,7 @@ const save=()=>{try{localStorage.setItem(STATE_KEY,JSON.stringify(progress))}cat
 progress.unlocked=clamp(Math.floor(Number(progress.unlocked)||0),0,LEVELS.length-1);
 let mode='menu',levelIndex=0,level=null, player=null,companion=null,active='luli',luliPresent=true,heart=3,score=0,levelFruit=0;
 let puzzle=[], parked=false, duoPress=null;
+let checkpointState=null,startState=null,activatedCheckpoints=new Set(),gateRequiresBoss=false,levelStartScore=0;
 let storySeen=new Set(),storyCooldown=0;const STORY=window.LULI_STORY||[];
 const asSpeech=ls=>speech(...ls.map(l=>[l.speaker,l.mood,l.text]));
 let fruits=[],enemies=[],npcList=[],editorEvents=[],particles=[],rescue=null,history=[],lastFrame=0,accumulator=0,clock=0,cameraX=0,cameraY=0;
@@ -107,11 +108,11 @@ function duoStart(){if(mode==='playing'&&luliPresent&&duoPress===null)duoPress=p
 function duoEnd(cancel=false){if(duoPress===null)return;const held=performance.now()-duoPress;duoPress=null;if(cancel||mode!=='playing'||!luliPresent||!companion)return;if(parked){recall();return;}if(held>=600){if(!clearBody(companion)||LuliPuzzles.overlap(companion,player)){const b=nearbyBody(companion.x,companion.y,companion.face);if(!b){toast('Não há espaço para o companheiro esperar.');return;}companion=b;}companion.vx=0;companion.vy=0;parked=true;toast(otherHero()+' aguardando aqui. Q para chamar.');return;}if(!clearBody(companion)||LuliPuzzles.overlap(companion,player)){const b=nearbyBody(companion.x,companion.y,companion.face);if(!b){toast('Sem espaço para alternar.');return;}companion=b;}const old=player;player=companion;companion=old;active=otherHero();player.vx=0;player.vy=0;LuliPuzzles.moveY(player,.5,solids(),surfaces());player.airJump=!player.onGround;coyote=0;jumpBuffer=0;history=[];toast(active==='luli'?'Luli • salto duplo':'Chris • empurrar caixas');}
 function movePuzzles(dt){const P=LuliPuzzles;for(const c of puzzle.filter(o=>o.kind==='crate')){c.vy=Math.min(1000,c.vy+GRAVITY*dt);P.moveY(c,c.vy*dt,[...solids(c),player,...(parked&&companion?[companion]:[])],surfaces());if(c.y>(level.height||540)+80){c.x=c.homeX;c.y=c.homeY;c.vy=0;}}if(parked&&companion){companion.vy=Math.min(1000,companion.vy+GRAVITY*dt);P.moveY(companion,companion.vy*dt,solids(),surfaces());if(companion.y>(level.height||540)+80)recall();}}
 function moveHeroX(dx){const P=LuliPuzzles;const blocks=solids();const r=P.sweep(player,dx,'x',blocks);if(r.hit?.kind==='crate'&&active==='chris'){const crate=r.hit;const remaining=dx-r.travel;const pushed=P.sweep(crate,remaining,'x',[...solids(crate),...(parked&&companion?[companion]:[]),{x:-1000,y:-10000,w:1000,h:20000},{x:level.width,y:-10000,w:1000,h:20000}]);P.sweep(player,pushed.travel,'x',solids());}player.x=clamp(player.x,1,level.width-player.w);}
-function startLevel(ix,keepHearts=false){levelIndex=ix;level=LEVELS[ix];FLOOR=(level.height||540)-78;mode='playing';active='luli';luliPresent=true;heart=keepHearts?Math.min(3,heart+1):3;
- player={x:level.spawn??95,y:(level.spawnY??FLOOR)-65,vx:0,vy:0,w:39,h:65,onGround:true,face:1,anim:0,landTimer:0,talkTimer:0};companion=bodyAt(Math.max(1,player.x-50),player.y,1);
+function startLevel(ix,keepHearts=false){levelStartScore=score;checkpointState=null;startState=null;activatedCheckpoints=new Set();levelIndex=ix;level=LEVELS[ix];gateRequiresBoss=level.editorRequiresBoss;FLOOR=(level.height||540)-78;mode='playing';active='luli';luliPresent=true;heart=keepHearts?Math.min(3,heart+1):3;
+ player={x:level.spawn??95,y:Math.max(0,(level.spawnY??FLOOR)-65),vx:0,vy:0,w:39,h:65,onGround:true,face:1,anim:0,landTimer:0,talkTimer:0};companion=bodyAt(Math.max(1,player.x-50),player.y,1);
  cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,(level.height||540)-view.h));checkpointX=level.spawn??95;checkpointY=level.spawnY??FLOOR;invulnerable=0;finishOnce=false;nearNPC=null;coyote=.1;jumpBuffer=0;playerTime=0;makeObjects();
  overlay.classList.add('hidden');hud.classList.remove('hidden');$('rescueBanner').classList.add('hidden');$('bossHud').classList.add('hidden');interEl.classList.add('hidden');
- keys.left=keys.right=keys.jump=false;storySeen=new Set();storyCooldown=1.2;updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
+ keys.left=keys.right=keys.jump=false;storySeen=new Set();storyCooldown=1.2;startState=captureState('start',safeStartPair());updateHUD();const opening=STORY[ix]?.intro;if(opening?.length)showDialogue(asSpeech(opening));else if(level.intro)showDialogue(speech(...DIALOG[level.intro]));else toast(level.name+' • '+level.tag,3);
 }
 function updateHUD(){if(!level)return;$('levelText').textContent=(levelIndex+1)+'. '+level.name;$('duoText').textContent=luliPresent?(active.toUpperCase()+' • '+(parked?otherHero().toUpperCase()+' AGUARDA':'DUPLA')):'CHRIS SOZINHO';
  const status=$('duoText').parentElement;status.classList.toggle('rescuing',!luliPresent);$('heartText').textContent='♥ '.repeat(heart).trim()+' ♡'.repeat(3-heart);
@@ -135,32 +136,126 @@ function showMenu(){mode='menu';dialog.classList.add('hidden');hud.classList.add
 function panel(kicker,title,description,buttons){overlay.classList.remove('hidden');overlay.innerHTML=`<div class="overlay-bg-stars"></div><section class="menu-panel"><div class="menu-eyebrow">${kicker}</div><h1>${title}</h1><p class="menu-description" style="max-width:510px;font-size:15px;margin:16px auto 20px">${description}</p><div class="menu-buttons">${buttons.map((b,i)=>`<button class="${i?'secondary-btn':'primary-btn'}" data-action="${b.action}">${b.label}</button>`).join('')}</div></section>`}
 function pause(){if(mode!=='playing')return;duoEnd(true);mode='paused';panel('✦ A JORNADA PODE ESPERAR','Pausa','Luli e Chris estão esperando para continuar a aventura.',[{action:'resume',label:'▶ CONTINUAR'},{action:'restart',label:'RECOMEÇAR A FASE'},{action:'menu',label:'MENU PRINCIPAL'}])}
 function resume(){if(mode!=='paused')return;overlay.classList.add('hidden');mode='playing'}
-function gameOver(){mode='gameover';beep(250,.35,'triangle',.09,-160);panel('✦ O CAMINHO AINDA EXISTE','Tente de novo!','Os três corações acabaram. Volte ao início desta fase e ajude os dois a encontrar o caminho de casa.',[{action:'restart',label:'↻ TENTAR NOVAMENTE'},{action:'menu',label:'VOLTAR AO MENU'}])}
-function completeLevel(){if(mode!=='playing'||finishOnce)return;finishOnce=true;mode='levelend';chime();progress.unlocked=Math.max(progress.unlocked,Math.min(LEVELS.length-1,levelIndex+1));progress.best=Math.max(progress.best,score);save();const isLast=levelIndex===LEVELS.length-1;
+function gameOver(){mode='gameover';duoEnd(true);beep(250,.35,'triangle',.09,-160);panel('✦ O CAMINHO AINDA EXISTE','Tente de novo!',checkpointState?'Os três corações acabaram. Retorne ao último checkpoint ou recomece a fase.':'Os três corações acabaram. Recomece esta fase.',[...(checkpointState?[{action:'checkpoint',label:'↻ VOLTAR AO CHECKPOINT'}]:[]),{action:'restart',label:checkpointState?'RECOMEÇAR A FASE':'↻ TENTAR NOVAMENTE'},{action:'menu',label:'VOLTAR AO MENU'}])}
+function completeLevel(){if(mode!=='playing'||finishOnce||portalBlockReason())return;finishOnce=true;mode='levelend';chime();progress.unlocked=Math.max(progress.unlocked,Math.min(LEVELS.length-1,levelIndex+1));progress.best=Math.max(progress.best,score);save();const isLast=levelIndex===LEVELS.length-1;
  if(isLast){overlay.classList.add('hidden');showDialogue(speech(...DIALOG.ending),'won');return;}
  panel('✦ MAIS PERTO DE CASA','Fase concluída!',`Luli e Chris atravessaram <b>${String(level.name).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</b>.<br>Você coletou <b>${levelFruit} frutas</b>. Mais um passo no caminho de casa.`,[{action:'next',label:'▶ PRÓXIMA FASE'},{action:'menu',label:'VOLTAR AO MENU'}]);}
 function showEndingPanel(){progress.completed=true;progress.unlocked=LEVELS.length-1;save();panel('✧ VOCÊ CHEGOU AO FIM ✧','De volta ao lar! ♡','O caminho foi difícil, mas eles chegaram juntos.<br><br><b>Parabéns! Você concluiu as 8 fases.</b><br>Para Luli, com carinho. ♡',[{action:'all',label:'↻ JOGAR NOVAMENTE'},{action:'menu',label:'VOLTAR AO MENU'}]);}
 function spawnBurst(x,y,color='#ffb2db',n=15){for(let i=0;i<n;i++){const a=Math.PI*2*i/n+(hash(clock+i)-.5)*.45;const speed=70+hash(i*43+clock)*130;particles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed-60,t:.6+hash(i*23)*.5,max:1,color,r:3+hash(i+10)*3})}}
-function summonCrystal(){const px=player.x+player.w/2,py=player.y+player.h;const supports=[...surfaces(),...solids().filter(o=>o.kind==='solid')];const spots=[];for(const s of supports){for(const offset of [-85,85,-45,45,0]){const x=clamp(px+offset,s.x+8,s.x+s.w-8),y=s.y-45;if(x<15||x>level.width-15||y<20||solids().some(o=>LuliPuzzles.overlap({x:x-10,y:y-10,w:20,h:20},o)))continue;spots.push({x,y,dist:Math.abs(x-(px+player.face*110))+Math.abs(s.y-py)*3+(Math.abs(x-px)<55?160:0)});}}spots.sort((a,b)=>a.dist-b.dist);const spot=spots[0]||{x:px,y:player.y+25};rescue={x:spot.x,y:spot.y,phase:0};}
-function restoreLuli(autoTalk=false){if(luliPresent)return;luliPresent=true;active='luli';rescue=null;
- companion=nearbyBody(player.x-56,player.y,player.face)||bodyAt(player.x,player.y,player.face);parked=false;history=[];invulnerable=2.3;player.landTimer=0;player.anim=0;spawnBurst(player.x+18,player.y+20,'#ffc3ec',24);chime();updateHUD();toast('✦ LULI VOLTOU! Chris voltou a acompanhá-la.',4);
- if(autoTalk)showDialogue(speech(...DIALOG.recover));}
-function hurt(reason,amount=1){if(mode!=='playing'||invulnerable>0)return;heart=Math.max(0,heart-amount);invulnerable=2.0;beep(210,.21,'sawtooth',.07,-110);
- const fall=reason==='fall';if(heart===0){updateHUD();gameOver();return;}
- if(luliPresent){const wasChris=active==='chris';luliPresent=false;active='chris';spawnBurst(player.x+17,player.y+22,'#ff7dd2',25);const x=fall?checkpointX:(wasChris?player.x:(companion?.x??player.x-45));const y=fall?checkpointY-player.h:(wasChris?player.y:(companion?.y??player.y));
- player.x=clamp(x,10,level.width-120);player.y=y;player.vx=0;player.vy=0;player.onGround=fall;companion=null;parked=false;duoPress=null;history=[];
- summonCrystal();toast('💔 Luli desapareceu! Chris assumiu o controle. Procure o cristal rosa!',5.0);
- }else{if(fall){player.x=checkpointX;player.y=checkpointY-player.h;player.vy=0;player.vx=0;player.onGround=true}else{player.vy=-380;player.vx=-(player.face*165)}
- toast('Chris perdeu um coração! Cuidado!',2.6);}
- if(fall&&!luliPresent){player.x=checkpointX;player.y=checkpointY-player.h;player.vx=0;player.vy=0;player.onGround=true;summonCrystal()}
- updateHUD();}
+/* In-memory attempt snapshots; persistent save format is unchanged. */
+const copyState=value=>JSON.parse(JSON.stringify(value));
+function supported(b){return [...solids(),...surfaces()].some(o=>Math.abs(b.y+b.h-o.y)<1&&b.x<o.x+o.w-.1&&b.x+b.w>o.x+.1);}
+function stableBody(b){return clearBody(b)&&supported(b);}
+function clearPath(a,b){const probe={...a},blocks=solids();LuliPuzzles.sweep(probe,b.x-a.x,'x',blocks);LuliPuzzles.sweep(probe,b.y-a.y,'y',blocks);return Math.abs(probe.x-b.x)<.1&&Math.abs(probe.y-b.y)<.1;}
+function pairAt(b,grounded=true){
+ if(!(grounded?stableBody(b):clearBody(b)))return null;
+ for(const dx of [-48,48,-40,40,-65,65,-85,85])for(const dy of [0,-16,16,-32,32,-64]){
+  const c=bodyAt(clamp(b.x+dx,1,level.width-39),b.y+dy,b.face);
+  if((grounded?stableBody(c):clearBody(c))&&!LuliPuzzles.overlap(b,c)&&clearPath(b,c))return {player:{...b},companion:c};
+ }
+ return null;
+}
+function safeStartPair(){
+ const candidates=[];
+ for(const o of [...solids(),...surfaces()])if(o.y>=65&&o.w>=39)for(const dx of [0,48,-48,80,-80]){
+  const x=clamp(player.x+dx,Math.max(1,o.x),Math.min(level.width-39,o.x+o.w-39));
+  const b=bodyAt(x,o.y-65,1),pair=pairAt(b,true);
+  if(pair)candidates.push({pair,cost:Math.abs(x-player.x)+Math.abs(b.y-player.y)*2});
+ }
+ candidates.sort((a,b)=>a.cost-b.cost);
+ return candidates[0]?.pair||pairAt(player,false)||{player:{...player},companion:{...companion}};
+}
+function captureState(id,pair){return copyState({id,levelIndex,player:pair.player,companion:pair.companion,active,score,levelFruit,puzzle,fruits,enemies,npcList,editorEvents,storySeen:[...storySeen],activated:[...activatedCheckpoints],gateRequiresBoss,playerTime});}
+function activateCheckpoint(cp){
+ if(mode!=='playing'||!luliPresent||parked||!player.onGround||!companion||activatedCheckpoints.has(cp.id))return false;
+ if(enemies.some(e=>e.alive&&Math.abs(e.x-player.x)<100&&Math.abs(e.y-player.y)<85))return false;
+ const pair=pairAt(player,true);if(!pair)return false;
+ activatedCheckpoints.add(cp.id);checkpointX=pair.player.x;checkpointY=pair.player.y+pair.player.h;
+ checkpointState=captureState(cp.id,pair);toast('✦ Checkpoint ativado!',3);chime();return true;
+}
+function restoreSnapshot(snapshot,options={}){
+ if(!snapshot||snapshot.levelIndex!==levelIndex)return false;
+ const s=copyState(snapshot);puzzle=s.puzzle;fruits=s.fruits;enemies=s.enemies;npcList=s.npcList;editorEvents=s.editorEvents;
+ storySeen=new Set(s.storySeen);activatedCheckpoints=new Set(s.activated);gateRequiresBoss=s.gateRequiresBoss;
+ score=s.score;levelFruit=s.levelFruit;playerTime=s.playerTime;player=s.player;companion=s.companion;active=s.active;
+ luliPresent=true;parked=false;rescue=null;history=[];particles=[];
+ for(const b of [player,companion])if(b){b.vx=0;b.vy=0;b.onGround=supported(b);b.airJump=false;b.landTimer=0;b.talkTimer=0;}
+ heart=options.heart??3;if(options.solo){active='chris';luliPresent=false;companion=null;}
+ checkpointX=player.x;checkpointY=player.y+player.h;if(snapshot.id==='start')checkpointState=null;
+ invulnerable=2.3;coyote=player.onGround?.1:0;jumpBuffer=0;duoPress=null;keys.left=keys.right=keys.jump=false;
+ nearNPC=null;storyCooldown=1.2;dialogue=[];dialogAction=null;dialogIndex=0;finishOnce=false;mode='playing';
+ cameraX=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraY=clamp(player.y-view.h*.55,0,Math.max(0,level.height-view.h));
+ overlay.classList.add('hidden');dialog.classList.add('hidden');hud.classList.remove('hidden');interEl.classList.add('hidden');
+ if(options.solo)summonCrystal();updateHUD();return true;
+}
+function restartCheckpoint(){if(mode==='gameover'&&checkpointState){restoreSnapshot(checkpointState);toast('✦ De volta ao checkpoint!',3);}}
+function fallRecovery(){restoreSnapshot(checkpointState||startState,{heart,solo:true});}
+function bossBlocksPortal(){return gateRequiresBoss&&enemies.some(e=>e.type==='pumpkin'&&e.alive);}
+function portalBlockReason(){
+ if(bossBlocksPortal())return '🎃 Derrote o Guardião Casca-Dura para abrir o portal!';
+ if(!luliPresent)return '💎 Resgate Luli antes de atravessar o portal!';
+ if(!clearBody(player)||parked||!companion||!clearBody(companion)||!clearPath(player,companion)||Math.abs(companion.x-player.x)>120||Math.abs(companion.y-player.y)>105)return 'Reúna Luli e Chris para atravessar o portal!';
+ return '';
+}
+function checkPortal(){
+ if(level.gate===null||Math.abs(player.x-level.gate)>=50||Math.abs(player.y+player.h-(level.gateY??FLOOR))>=85)return false;
+ if(luliPresent&&!parked&&companion&&(Math.abs(companion.x-player.x)>120||Math.abs(companion.y-player.y)>105||!clearBody(companion)||!clearPath(player,companion))){
+  const pair=pairAt(player,false);if(pair){companion=pair.companion;history=[];}
+ }
+ const reason=portalBlockReason();if(reason){if(toastClock<1)toast(reason,2.3);return false;}
+ completeLevel();return true;
+}
+function summonCrystal(){
+ const center=player.x+player.w/2,feet=player.y+player.h,blocks=solids(),spots=[];
+ for(const dx of [70,-70,100,-100,55,-55]){
+  const b=bodyAt(clamp(player.x+dx,1,level.width-39),player.y,player.face);
+  if(!stableBody(b)||!clearPath(player,b))continue;
+  const x=b.x+b.w/2,y=feet-38;
+  if(!blocks.some(o=>LuliPuzzles.overlap({x:x-14,y:y-25,w:28,h:50},o)))spots.push({x,y});
+ }
+ rescue={...(spots[0]||{x:center,y:player.y+player.h*.5}),phase:0,age:0,emergency:!spots.length};
+}
+function restoreLuli(autoTalk=false){
+ if(luliPresent)return true;
+ const pair=pairAt(player,false);
+ if(!pair){
+  if(!restoreSnapshot(checkpointState||startState,{heart}))return false;
+  active='luli';toast('✦ Luli voltou! A dupla retornou a um local seguro.',4);
+ }else{
+  luliPresent=true;active='luli';companion=pair.companion;parked=false;history=[];invulnerable=2.3;
+  player.landTimer=0;player.anim=0;spawnBurst(player.x+18,player.y+20,'#ffc3ec',24);chime();toast('✦ LULI VOLTOU! Chris voltou a acompanhá-la.',4);
+ }
+ rescue=null;updateHUD();if(autoTalk)showDialogue(speech(...DIALOG.recover));return true;
+}
+function updateRescue(dt){
+ if(!rescue||luliPresent)return;rescue.phase+=dt;rescue.age+=dt;
+ if(rescue.age>=8||rescue.emergency){
+  rescue.emergency=true;rescue.x=player.x+player.w/2;rescue.y=player.y+player.h*.5;
+  if(player.onGround&&rescue.age>=.65)restoreLuli(true);return;
+ }
+ const pc=player.x+player.w/2,py=player.y+player.h/2;
+ if(Math.abs(pc-rescue.x)<34&&Math.abs(py-(rescue.y+Math.sin(clock*4)*10))<66)restoreLuli(true);
+}
+function hurt(reason,amount=1){
+ if(mode!=='playing'||invulnerable>0)return;
+ heart=Math.max(0,heart-amount);invulnerable=2;beep(210,.21,'sawtooth',.07,-110);
+ if(heart===0){updateHUD();gameOver();return;}
+ if(reason==='fall'){fallRecovery();toast('💔 Chris voltou ao ponto seguro. Resgate Luli!',4);return;}
+ if(luliPresent){
+  const candidate=active==='chris'?player:companion;
+  if(candidate&&!parked&&Math.abs(candidate.x-player.x)<120&&Math.abs(candidate.y-player.y)<100&&clearBody(candidate)&&clearPath(player,candidate))player={...candidate};
+  luliPresent=false;active='chris';spawnBurst(player.x+17,player.y+22,'#ff7dd2',25);player.vx=0;player.vy=0;player.onGround=supported(player);companion=null;parked=false;duoPress=null;history=[];
+  summonCrystal();toast('💔 Luli desapareceu! Chris assumiu o controle. Procure o cristal rosa!',5);
+ }else{player.vy=-380;player.vx=-(player.face*165);toast('Chris perdeu um coração! Cuidado!',2.6);}
+ updateHUD();
+}
 function triggerStudioEvent(trigger,x=player?.x,only=null){
  for(const ev of editorEvents){if((only&&only!==ev)||ev.trigger!==trigger||(ev.once&&ev.used)||Math.abs(x-ev.x)>Math.max(80,ev.width||120))continue;ev.used=true;
  if(ev.action==='toast')toast(String(ev.message||'Evento ativado!').slice(0,300),4);
  if(ev.action==='dialog'){const lines=(ev.dialogue||[]).map(l=>[l.speaker||'narrator',l.mood||'dica',l.text||'']);if(lines.length)showDialogue(speech(...lines));}
  if(ev.action==='heal'){heart=Math.min(3,heart+1);if(!luliPresent)restoreLuli(false);updateHUD();toast(ev.message||'Coração recuperado!')}
- if(ev.action==='checkpoint'){checkpointX=ev.x;checkpointY=player.y+player.h;toast(ev.message||'Novo checkpoint!')}
- if(ev.action==='gate'){level.editorRequiresBoss=false;toast(ev.message||'Portal liberado!')}
+ if(ev.action==='checkpoint'){if(activateCheckpoint({id:'event:'+ev.id,x:ev.x,y:player.y+player.h}))toast(ev.message||'Novo checkpoint!');else if(!activatedCheckpoints.has('event:'+ev.id))ev.used=false;}
+ if(ev.action==='gate'){if(!bossBlocksPortal()){gateRequiresBoss=false;toast(ev.message||'Portal liberado!')}else toast('Derrote o Guardião primeiro!');}
  }
 }
 function interact(){if(player&&mode==='playing')player.talkTimer=.8;if(mode==='dialog'){nextDialogue();return}if(mode!=='playing')return;
@@ -189,9 +284,9 @@ $('soundBtn').textContent=muted?'♪̸':'♫';$('soundBtn').addEventListener('cl
 $('pauseBtn').addEventListener('click',()=>{if(mode==='paused')resume();else pause()});
 overlay.addEventListener('click',e=>{
  if(e.target.closest('#startBtn')){score=0;startLevel(0);return}if(e.target.closest('#continueBtn')){score=0;startLevel(clamp(progress.unlocked,0,LEVELS.length-1));return}
- if(e.target.closest('#howBtn')){panel('✧ GUIA DE AVENTURA ✧','Como jogar','<b>Luli começa no controle</b>. Q rápido alterna; segure Q por 0,6 s para deixar o companheiro esperando; pressione Q para chamá-lo. Luli salta duas vezes; Chris empurra caixas. Placas de pressão abrem portas do mesmo canal.<br>Se Luli sofrer dano, ela desaparece: você passa a controlar Chris. Encontre o <b>cristal rosa</b> ou converse com a curandeira para restaurá-la.<br><br><b>← →</b> para andar; <b>ESPAÇO</b> para pular; <b>E</b> para falar; <b>P</b> para pausar.<br>Toque nos botões ao jogar no celular. Pule sobre os inimigos e alcance o portal de cada fase.',[{action:'menu',label:'ENTENDI! VOLTAR AO MENU'}]);return}
+ if(e.target.closest('#howBtn')){panel('✧ GUIA DE AVENTURA ✧','Como jogar','<b>Luli começa no controle</b>. Q rápido alterna; segure Q por 0,6 s para deixar o companheiro esperando; pressione Q para chamá-lo. Luli salta duas vezes; Chris empurra caixas. Placas de pressão abrem portas do mesmo canal.<br>Se Luli sofrer dano, ela desaparece: você passa a controlar Chris. Encontre o <b>cristal rosa</b> ou converse com a curandeira para restaurá-la.<br><br><b>← →</b> para andar; <b>ESPAÇO</b> para pular; <b>E</b> para falar; <b>P</b> para pausar.<br>Toque nos botões ao jogar no celular. Pule sobre os inimigos, ative checkpoints e reúna Luli e Chris para atravessar o portal de cada fase.',[{action:'menu',label:'ENTENDI! VOLTAR AO MENU'}]);return}
  const stage=e.target.closest('[data-stage]');if(stage){const ix=Number(stage.dataset.stage);if(Number.isInteger(ix)&&ix>=0&&ix<=progress.unlocked&&ix<LEVELS.length){score=0;startLevel(ix);}return;}if(e.target.closest('#chaptersBtn')){overlay.innerHTML='<div class="overlay-bg-stars"></div><section class="menu-panel chapter-panel"><div class="menu-eyebrow">O CAMINHO DE VOLTA</div><h2>Capítulos</h2><div class="chapter-list">'+LEVELS.map((l,i)=>`<button class="chapter-btn" data-stage="${i}" ${i>progress.unlocked?'disabled':''}><span>${String(i+1).padStart(2,'0')}</span>${l.name}<small>${i>progress.unlocked?'Bloqueada':'Jogar'}</small></button>`).join('')+'</div><button class="secondary-btn" data-action="menu">Voltar</button></section>';return;}const act=e.target.closest('[data-action]')?.dataset.action;
- switch(act){case 'resume':resume();break;case 'restart':startLevel(levelIndex);break;case 'next':startLevel(levelIndex+1,true);break;case 'all':score=0;startLevel(0);break;case 'menu':showMenu();break;}
+ switch(act){case 'resume':resume();break;case 'checkpoint':restartCheckpoint();break;case 'restart':score=levelStartScore;startLevel(levelIndex);break;case 'next':startLevel(levelIndex+1,true);break;case 'all':score=0;startLevel(0);break;case 'menu':showMenu();break;}
 });
 function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)toastEl.classList.remove('shown')}
  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=200*dt;p.t-=dt}particles=particles.filter(p=>p.t>0);
@@ -218,7 +313,7 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
  if(luliPresent&&companion&&!parked){const target=history[Math.min(history.length-1,11)]||{x:player.x-65,y:player.y,face:player.face};const off=Math.abs(player.vx)<15?player.face*61:0;const desiredX=target.x-off;
  const follow=Math.min(1,dt*10);LuliPuzzles.sweep(companion,clamp(desiredX-companion.x,-110,110)*follow,'x',solids());LuliPuzzles.sweep(companion,(target.y-companion.y)*follow,'y',solids());companion.face=target.face;companion.anim+=dt*(Math.abs(player.vx)>30?9:2);}
  LuliPuzzles.signal(puzzle.filter(o=>o.kind==='plate'),puzzle.filter(o=>o.kind==='door'),[player,...(parked&&companion?[companion]:[]),...puzzle.filter(o=>o.kind==='crate')]);
- if(player.y>(level.height||540)+95){if(invulnerable>0){player.x=checkpointX;player.y=checkpointY-player.h;player.vy=0;player.vx=0;}else hurt('fall');return}
+ if(player.y>(level.height||540)+95){if(invulnerable>0)fallRecovery();else hurt('fall');return}
  // Enemy AI and collisions: same world geometry as the heroes.
  const world=enemyWorld();
  for(const e of enemies){if(!e.alive)continue;e.phase+=dt;e.stun=Math.max(0,e.stun-dt);e.attack=Math.max(0,e.attack-dt);
@@ -233,8 +328,7 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
  else {hurt('enemy',e.ai?.damage||1);return}}
  }
  for(const f of fruits){if(f.found)continue;const fy=f.y+Math.sin(clock*3+f.phase)*5;const pc=player.x+player.w/2,py=player.y+player.h/2;if(Math.abs(pc-f.x)<27&&Math.abs(py-fy)<43){f.found=true;const val=f.value||1;score+=val;levelFruit+=val;triggerStudioEvent('collect',f.x);beep(670,.06,'sine',.028,400);if(levelFruit%12===0){if(heart<3){heart++;toast('♥ 12 frutas! Você ganhou um coração!')}else toast('✦ 12 frutas coletadas!');chime()}}}
- if(rescue){rescue.phase+=dt;const pc=player.x+player.w/2,py=player.y+player.h/2;
- if(Math.abs(pc-rescue.x)<34&&Math.abs(py-(rescue.y+Math.sin(clock*4)*10))<66){restoreLuli(true)}}
+ updateRescue(dt);
  if(mode!=='playing')return;
  storyCooldown=Math.max(0,storyCooldown-dt);
  if(storyCooldown===0&&luliPresent&&!parked&&player.onGround&&invulnerable===0&&!enemies.some(e=>e.alive&&Math.abs(e.x-player.x)<100&&Math.abs(e.y-player.y)<90)){
@@ -243,9 +337,8 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
   if(ix>=0){storySeen.add(ix);showDialogue(asSpeech(scenes[ix].lines));return;}
  }
  if(editorEvents.length)for(const ev of editorEvents){if(ev.trigger!=='enter')continue;const inside=player.x+player.w>=ev.x&&player.x<=ev.x+(ev.width||160)&&player.y+player.h>=ev.y&&player.y<=ev.y+100;if(inside&&!ev.inside){ev.inside=true;triggerStudioEvent('enter',player.x,ev);if(mode!=='playing')return;}else ev.inside=inside;}
- if(level.checkpoint!==null&&(level.editorEntities?Math.abs(player.x-level.checkpoint)<60&&Math.abs(player.y+player.h-(level.checkpointY??FLOOR))<80&&checkpointX!==level.checkpoint:player.x>level.checkpoint&&checkpointX<level.checkpoint)){checkpointX=level.editorEntities?level.checkpoint:safeX(level.checkpoint+23);checkpointY=level.checkpointY??FLOOR;toast('✦ Checkpoint ativado!',3);chime()}
- const bossAlive=(level.editorEntities?level.editorRequiresBoss:levelIndex===2)&&enemies.some(e=>e.type==='pumpkin'&&e.alive);
- if(level.gate!==null&&(level.editorEntities?Math.abs(player.x-level.gate)<50&&Math.abs(player.y+player.h-(level.gateY??FLOOR))<85:player.x>level.gate-28)){if(bossAlive){if(toastClock<1)toast('🎃 Derrote o Guardião Casca-Dura para abrir o portal!',2.3)}else{completeLevel();return}}
+ for(const cp of level.checkpoints||[])if(Math.abs(player.x-cp.x)<60&&Math.abs(player.y+player.h-cp.y)<38)activateCheckpoint(cp);
+ if(checkPortal())return;
  nearNPC=npcList.find(n=>Math.abs(player.x-n.x)<93&&Math.abs(player.y+player.h-(n.studio?.y??FLOOR))<100)||null;interEl.classList.toggle('hidden',!nearNPC);
  if(nearNPC){interEl.style.left=clamp((nearNPC.x-cameraX)/view.w*canvas.clientWidth,65,canvas.clientWidth-65)+'px';interEl.innerHTML='E <span>'+(nearNPC.type==='healer'&&!nearNPC.used?'CURAR':'CONVERSAR')+'</span>'}
  const nextCamera=clamp(player.x-view.w*.35,0,Math.max(0,level.width-view.w));cameraX+=(nextCamera-cameraX)*Math.min(1,dt*5.6);const nextY=clamp(player.y-view.h*.55,0,Math.max(0,(level.height||540)-view.h));cameraY+=(nextY-cameraY)*Math.min(1,dt*5.6);updateHUD();
@@ -415,14 +508,14 @@ function drawRescue(){if(!rescue)return;const x=rescue.x,y=rescue.y+Math.sin(clo
  ctx.fillStyle='#ffe9f7';ctx.beginPath();ctx.moveTo(0,-27);ctx.lineTo(7,-6);ctx.lineTo(0,18);ctx.lineTo(-6,-6);ctx.closePath();ctx.fill();ctx.restore();
  for(let i=0;i<4;i++){const th=clock*2+i*Math.PI/2;ellipse(x+Math.cos(th)*41,y+Math.sin(th)*26,2.6,2.6,'#ffd4f0')}
  ctx.save();ctx.fillStyle='#ffe3f5';ctx.textAlign='center';ctx.font='900 12px system-ui';ctx.fillText('RESGATAR LULI',x,y-48);ctx.restore();
- if(x<cameraX+30||x>cameraX+view.w-40){const screen=x-cameraX<30?37:view.w-37;ctx.save();ctx.fillStyle='#ffcdf0';ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillText((screen<view.w/2?'◀ ':'▶ ')+'LULI',cameraX+screen,FLOOR-159);ctx.restore()}
+ if(x<cameraX+30||x>cameraX+view.w-40||y<cameraY+25||y>cameraY+view.h-25){const sx=clamp(x-cameraX,45,view.w-45),sy=clamp(y-cameraY,90,view.h-45);const arrow=y<cameraY+25?'↑':y>cameraY+view.h-25?'↓':x<cameraX+30?'◀':'▶';ctx.save();ctx.fillStyle='#ffcdf0';ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillText(arrow+' LULI',cameraX+sx,cameraY+sy);ctx.restore()}
 }
-function drawPortal(){if(level.gate===null)return;const x=level.gate,bossActive=(level.editorEntities?level.editorRequiresBoss:levelIndex===2)&&enemies.some(e=>e.type==='pumpkin'&&e.alive);const text=levelIndex===LEVELS.length-1?'CASA':'PRÓXIMA FASE';
+function drawPortal(){if(level.gate===null)return;const x=level.gate,bossActive=bossBlocksPortal();const text=levelIndex===LEVELS.length-1?'CASA':'PRÓXIMA FASE';
  ctx.save();ctx.translate(x,level.gateY??FLOOR);ctx.shadowColor=bossActive?'#d18d9e':'#ffe5ba';ctx.shadowBlur=23;
  ctx.strokeStyle=bossActive?'#a16e82':'#f3c998';ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(-42,0);ctx.lineTo(-42,-96);ctx.quadraticCurveTo(0,-156,42,-96);ctx.lineTo(42,0);ctx.stroke();ctx.shadowBlur=0;
  ctx.strokeStyle=bossActive?'#78516f':'#8f6180';ctx.lineWidth=4;ctx.stroke();
  let g=ctx.createRadialGradient(0,-65,3,0,-65,79);g.addColorStop(0,bossActive?'#aaa0bb99':'#f4e1ffdd');g.addColorStop(.6,bossActive?'#ac748455':'#ffb9df99');g.addColorStop(1,'#ffffff00');ctx.fillStyle=g;ctx.fillRect(-85,-154,170,160);
- ctx.fillStyle='#ffefc4';ctx.font='900 14px system-ui';ctx.textAlign='center';ctx.fillText(bossActive?'BLOQUEADO':text,0,-167);ctx.restore();}
+ ctx.fillStyle='#ffefc4';ctx.font='900 14px system-ui';ctx.textAlign='center';ctx.fillText(bossActive?'BLOQUEADO':!luliPresent?'RESGATE LULI':parked?'REÚNA A DUPLA':text,0,-167);ctx.restore();}
 function drawEnvironmentExtra(){// colorful fruit kingdom islands: small mushrooms, banners and flowers
  const a=Math.floor((cameraX-100)/430),b=Math.ceil((cameraX+view.w+100)/430);
  for(let i=a;i<=b;i++){if(i<0)continue;const x=240+i*430;
@@ -435,15 +528,15 @@ function drawEnvironmentExtra(){// colorful fruit kingdom islands: small mushroo
  ctx.save();ctx.globalAlpha=.5;ctx.fillStyle='#79a4a1';ctx.fillRect(x,338,view.w,90);ctx.globalAlpha=1;ctx.restore();}
 }
 function drawParticles(){for(const p of particles){ctx.globalAlpha=clamp(p.t/p.max,0,1);ellipse(p.x,p.y,p.r,p.r,p.color)}ctx.globalAlpha=1}
-function drawCheckpoint(){if(level.checkpoint===null)return;const x=level.checkpoint;
- ctx.save();ctx.translate(x,level.checkpointY??FLOOR);
+function drawCheckpoint(){for(const cp of level.checkpoints||[]){const x=cp.x;
+ ctx.save();ctx.translate(x,cp.y??FLOOR);
  ctx.strokeStyle='#735866';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-115);ctx.stroke();
  ctx.fillStyle='#efb1a9';ctx.beginPath();ctx.moveTo(2,-114);ctx.quadraticCurveTo(40,-116,60,-105);ctx.lineTo(60,-66);ctx.quadraticCurveTo(29,-84,2,-71);ctx.closePath();ctx.fill();
  ctx.strokeStyle='#fff0bd';ctx.lineWidth=2;ctx.stroke();
  ellipse(30,-93,6,6,'#ffefbd');
- if(checkpointX>=x){ctx.shadowColor='#ffe2b8';ctx.shadowBlur=20;ellipse(30,-93,9,9,'#ffecba');ctx.shadowBlur=0;}
+ if(activatedCheckpoints.has(cp.id)){ctx.shadowColor='#ffe2b8';ctx.shadowBlur=20;ellipse(30,-93,9,9,'#ffecba');ctx.shadowBlur=0;}
  ctx.restore();
-}
+}}
 
 function drawForeground(){
  // tiny golden dust particles, original ambient effect
