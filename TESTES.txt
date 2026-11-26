@@ -1,0 +1,21 @@
+test_boss_requirement (test_validate.Tests.test_boss_requirement) ... ok
+test_bounds (test_validate.Tests.test_bounds) ... ok
+test_clean_campaign (test_validate.Tests.test_clean_campaign) ... ok
+test_dialogue (test_validate.Tests.test_dialogue) ... ok
+test_door_and_overlap (test_validate.Tests.test_door_and_overlap) ... ok
+test_duplicate_and_unknown (test_validate.Tests.test_duplicate_and_unknown) ... ok
+test_embedded_sprite (test_validate.Tests.test_embedded_sprite) ... ok
+test_empty_and_opaque (test_validate.Tests.test_empty_and_opaque) ... ok
+test_frame_warnings (test_validate.Tests.test_frame_warnings) ... ok
+test_integration (test_validate.Tests.test_integration) ... ok
+test_invalid_enemy (test_validate.Tests.test_invalid_enemy) ... ok
+test_invalid_png (test_validate.Tests.test_invalid_png) ... ok
+test_missing_required (test_validate.Tests.test_missing_required) ... ok
+test_multiple_checkpoint_warning (test_validate.Tests.test_multiple_checkpoint_warning) ... ok
+test_parse_no_eval (test_validate.Tests.test_parse_no_eval) ... ok
+test_valid_sheets (test_validate.Tests.test_valid_sheets) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.918s
+
+OK
