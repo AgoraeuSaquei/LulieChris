@@ -474,13 +474,13 @@ function artStone(x,y,w,h,a,grass=false){if(!visibleArt(x,y,w,h))return;
  for(let yy=minY;yy<maxY;yy+=th){const row=Math.round((yy-y)/th),off=(row%2)*20;let start=Math.max(-1,Math.floor((cameraX-x-off)/tw)-1),end=Math.min(Math.ceil(w/tw),Math.ceil((cameraX+view.w-x-off)/tw)+1);for(let n=start;n<=end;n++){const xx=x+off+n*tw,rand=hash(xx*13+yy*19);pixelRect(xx+1,yy+1,tw-2,th-2,a.stone[1]);pixelRect(xx+2,yy+2,tw-4,3,a.stone[2]);pixelRect(xx+2,yy+5,3,th-8,a.stone[2]);pixelRect(xx+tw-5,yy+7,3,th-10,a.stone[0]);if(rand>.42){pixelRect(xx+10,yy+10,8,3,a.stone[0]);pixelRect(xx+17,yy+13,4,5,a.stone[0]);}if(rand>.75)pixelRect(xx+27,yy+7,5,3,a.stone[2]);}}
  if(grass){pixelRect(x,y,w,Math.min(9,h),a.grass[0]);pixelRect(x,y,w,Math.min(4,h),a.grass[2]);let sx=Math.max(x,Math.floor((cameraX-x)/8)*8+x-8);for(let xx=sx;xx<Math.min(x+w,cameraX+view.w+12);xx+=8){let n=hash(xx*7+y*3);pixelRect(xx,y+4,8,4+Math.floor(n*8),a.grass[1]);if(n>.65)pixelRect(xx+2,y+12,4,4,a.grass[0]);}}
  else pixelRect(x,y,w,Math.min(3,h),a.stone[2]);ctx.restore();}
-function drawTerrain(){const a=mapArt();for(const [x,w] of level.ground)artStone(x,FLOOR,w,Math.max(120,level.height-FLOOR+120),a,true);for(const [x,y,w] of level.platforms)artStone(x,y,w,18,a,true);}
+function drawTerrain(){const a=mapArt();for(const [x,w] of level.ground){const h=Math.max(120,level.height-FLOOR+120);if(!window.LuliFantasyTiles?.draw(ctx,levelIndex,'ground',x,FLOOR,w,h,view,cameraX,cameraY))artStone(x,FLOOR,w,h,a,true);}for(const [x,y,w] of level.platforms)if(!window.LuliFantasyTiles?.draw(ctx,levelIndex,'platform',x,y,w,18,view,cameraX,cameraY))artStone(x,y,w,18,a,true);}
 function drawFlower(x,y,pink=true){const c=pink?'#f5a2c0':'#fbd98a';pixelRect(x-1,y-5,3,11,c);pixelRect(x-5,y-1,11,3,c);pixelRect(x-2,y-2,5,5,'#fff1b9');}
 function drawDecor(){
  const a=mapArt();for(const [x,y,w] of [...level.ground.map(([x,w])=>[x,FLOOR,w]),...level.platforms]){if(!visibleArt(x,y-25,w,30))continue;let start=Math.max(0,Math.floor((cameraX-x)/32)-1),end=Math.min(Math.floor(w/32),Math.ceil((cameraX+view.w-x)/32)+1);for(let i=start;i<=end;i++){const xx=x+i*32+10;if(xx>x+w-10)continue;const r=hash(xx*29+y*3);if(r<.28)continue;pixelRect(xx,y-7,3,7,a.grass[1]);pixelRect(xx-4,y-4,5,3,a.grass[0]);pixelRect(xx+3,y-6,5,3,a.grass[1]);if(r>.73){pixelRect(xx,y-13,2,10,a.grass[1]);drawFlower(xx,y-14,r>.87);}}}
 }
 function drawMapPuzzle(o){const a=mapArt(),{x,y,w,h}=o;if(!visibleArt(x,y,w,h,45))return;
- if(o.kind==='solid'){artStone(x,y,w,h,a,false);return;}
+ if(o.kind==='solid'){if(!window.LuliFantasyTiles?.draw(ctx,levelIndex,'solid',x,y,w,h,view,cameraX,cameraY))artStone(x,y,w,h,a,false);return;}
  if(o.kind==='crate'){ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();pixelRect(x,y,w,h,'#644a49');pixelRect(x+3,y+3,w-6,h-6,'#b58457');for(let k=8;k<w-4;k+=13){pixelRect(x+k,y+5,2,h-10,'#805635');pixelRect(x+k+2,y+5,2,h-10,'#d6a46e');}ctx.strokeStyle='#7f553d';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+5,y+5);ctx.lineTo(x+w-5,y+h-5);ctx.moveTo(x+w-5,y+5);ctx.lineTo(x+5,y+h-5);ctx.stroke();for(const xx of [x+2,x+w-10])for(const yy of [y+2,y+h-10]){pixelRect(xx,yy,8,8,'#5e6174');pixelRect(xx+2,yy+2,3,3,'#f0cf93');}ctx.restore();return;}
  const c=o.kind==='plate'?(o.pressed?'#9af4ae':'#ffd080'):(o.open?'#83e9bd':'#ffc17a');
  if(o.kind==='plate'){pixelRect(x,y,w,h,'#53465e');pixelRect(x+2,y+2,w-4,Math.min(4,h-2),c);pixelRect(x+6,y+h-3,w-12,2,'#8d8397');}
@@ -587,7 +587,7 @@ function drawForeground(){
 
 function draw(){ctx.setTransform(canvas.width/view.w,0,0,canvas.height/view.h,0,0);ctx.clearRect(0,0,view.w,view.h);
  if(!level){ctx.fillStyle='#33204d';ctx.fillRect(0,0,view.w,view.h);return}
- drawSky();ctx.save();ctx.translate(-cameraX,-cameraY);drawTrees();drawTerrain();drawDecor();for(const o of puzzle)drawMapPuzzle(o);
+ drawSky();window.LuliFantasyArt?.background(ctx,levelIndex,level,view,cameraX,cameraY);ctx.save();ctx.translate(-cameraX,-cameraY);if(!window.LuliFantasyArt?.decor(ctx,levelIndex,level,view,cameraX,cameraY))drawTrees();drawTerrain();drawDecor();for(const o of puzzle)drawMapPuzzle(o);
  for(const f of fruits)if(!f.found&&f.x>cameraX-35&&f.x<cameraX+view.w+35)drawFruit(f.x,f.y,f.type,12,f.phase);
  drawCheckpoint();drawPortal();
  for(const npc of npcList)if(npc.x>cameraX-110&&npc.x<cameraX+view.w+110)drawNPCNew(npc);
