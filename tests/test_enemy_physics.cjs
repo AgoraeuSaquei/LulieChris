@@ -130,6 +130,30 @@ function runEnemyTests(P,E,campaign,game,html,story,loadGame){
       runtime.draw();
     }
   });
+  test('visual pass: distinct palettes, deterministic draw and unchanged collision geometry',()=>{
+    const rt=loadGame(game,campaign,story,P,E),palettes=new Set();
+    for(let i=0;i<campaign.levels.length;i++){
+      rt.startLevel(i);for(let j=0;j<35&&rt.getMode()==='dialog';j++)rt.nextDialogue();
+      palettes.add(rt.getArtPalette().sky.join(','));
+      const raw=campaign.levels[i],world=JSON.stringify(rt.getWorld());
+      for(const width of [320,960,1700])for(const pos of [[0,0],[Math.max(0,raw.width-width),Math.max(0,raw.height-540)]]){
+        rt.setArtCamera(pos[0],pos[1],width);rt.clearRects();rt.draw();
+        const rects=rt.getRects();assert(rects.length>50&&rects.length<15000,'unexpected draw count '+rects.length);
+        assert(rects.every(r=>r.args.every(Number.isFinite)&&r.args[2]>=0&&r.args[3]>=0),'invalid drawing rectangle');
+        const before=JSON.stringify(rects);rt.clearRects();rt.draw();assert(JSON.stringify(rt.getRects())===before,'nondeterministic frame');
+        assert(JSON.stringify(rt.getWorld())===world,'drawing mutated collision geometry');
+      }
+    }assert(palettes.size===8,'palette reused');
+  });
+  test('visual pass: pressure plate and horizontal door show different states',()=>{
+    const rt=loadGame(game,campaign,story,P,E);rt.startLevel(7);rt.setArtCamera(0,0,960);
+    const draw=o=>{rt.clearRects();rt.drawArtPuzzle(o);return JSON.stringify(rt.getRects())};
+    const plate={kind:'plate',x:544,y:192,w:96,h:12,channel:'A',pressed:false};
+    assert(draw(plate)!==draw({...plate,pressed:true}),'plate status not visible');
+    const door={kind:'door',x:640,y:192,w:352,h:30,channel:'A',open:false};
+    assert(draw(door)!==draw({...door,open:true}),'door status not visible');
+    assert(draw({...door,x:4000})==='[]','offscreen geometry drawn');
+  });
   return {passed:results.length,tests:results,enemies:total,physicsTicks:total*1200};
 }
 function makeRuntime(game,campaign,story,P,E){
@@ -146,7 +170,7 @@ function makeRuntime(game,campaign,story,P,E){
   const LuliSheets={ready(){return false;},paint(){return false;},HERO:{idle:{row:0},run:{row:1},jump:{row:2},landing:{row:3},talk:{row:4}}};
   const marker='setup();\n})();';
   if(!game.includes(marker))throw Error('Runtime test hook location changed');
-  const instrumented=game.replace(marker,`setup();window.__test={startLevel,nextDialogue,update,draw,drawEnemy:drawEnemyNew,getEnemies:()=>enemies,getWorld:enemyWorld,getMode:()=>mode};\n})();`);
+  const instrumented=game.replace(marker,`setup();window.__test={startLevel,nextDialogue,update,draw,drawEnemy:drawEnemyNew,getEnemies:()=>enemies,getWorld:enemyWorld,getMode:()=>mode,setArtCamera:(x,y,w)=>{cameraX=x;cameraY=y;view.w=w;},getArtPalette:mapArt,drawArtPuzzle:drawMapPuzzle};\n})();`);
   const fn=new Function('window','document','Image','requestAnimationFrame','localStorage','devicePixelRatio','performance','LuliPuzzles','LuliEnemies','LuliSheets','setTimeout',instrumented);
   fn(window,document,Image,()=>{}, {getItem(){return null;},setItem(){}},1,{now(){return 1000;}},P,E,LuliSheets,()=>{});
   return {...window.__test,clearRects:()=>{rects.length=0;},getRects:()=>rects};

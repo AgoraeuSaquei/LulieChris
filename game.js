@@ -421,100 +421,71 @@ function update(dt){clock+=dt;if(toastClock>0){toastClock-=dt;if(toastClock<=0)t
 function fillRoundRect(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
 function strokeRoundRect(x,y,w,h,r,color,width=2){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.stroke()}
 function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill()}
+// Visual pass V1: deterministic pixel-art scenery; no collision or map mutations.
+const MAP_ART=[
+ {sky:['#4389bd','#91cbe0','#f8e2ba'],far:'#91b4c8',mid:'#679caa',near:'#416e79',leaf:'#3d8068',light:'#82bb77',bark:'#725149',stone:['#67565f','#917063','#b79579'],grass:['#397b59','#78b85c','#bddb75'],accent:'#ef9cba',ruins:false},
+ {sky:['#7187b9','#b5bbd6','#f5d7b0'],far:'#9da6c0',mid:'#7a89a8',near:'#596b87',leaf:'#4e7770',light:'#8ca980',bark:'#65576a',stone:['#53546b','#777587','#aaa0a3'],grass:['#496e57','#89ac68','#c2cc83'],accent:'#edb1ac',ruins:true},
+ {sky:['#568cb3','#a7c9cb','#f6dcae'],far:'#8cb0b7',mid:'#648f92',near:'#416e77',leaf:'#3f7968',light:'#90b77e',bark:'#645263',stone:['#50576c','#788492','#b1aba2'],grass:['#3f7656','#78ad69','#c2d391'],accent:'#e6b1f6',ruins:true},
+ {sky:['#7a7db1','#b3a8ca','#f7d7ae'],far:'#a5a4bf',mid:'#8584a7',near:'#626483',leaf:'#567b70',light:'#a0b77d',bark:'#675361',stone:['#54516a','#81788c','#bcb0ad'],grass:['#4b7758','#91b474','#cddd91'],accent:'#f0b879',ruins:true},
+ {sky:['#393d79','#ac7198','#f4ba8d'],far:'#947b9c',mid:'#71688a',near:'#4c536f',leaf:'#526c68',light:'#a8a779',bark:'#624b5e',stone:['#4e4560','#796175','#b68c86'],grass:['#657353','#a2a56a','#dfba7d'],accent:'#ffb29c',ruins:true},
+ {sky:['#3b447b','#817dae','#e0b5a9'],far:'#777fa5',mid:'#5d668d',near:'#414e72',leaf:'#456d6d',light:'#78a595',bark:'#594c64',stone:['#454962','#6f758a','#a8a9bc'],grass:['#3c6962','#70a590','#a9d3ae'],accent:'#8ce5e8',ruins:true},
+ {sky:['#292d59','#575c90','#baa5bb'],far:'#65678d',mid:'#4d557c',near:'#363f60',leaf:'#426666',light:'#6f9b93',bark:'#4d4259',stone:['#3f425a','#656780','#a1a1b2'],grass:['#3d665e','#73a28d','#a4cbab'],accent:'#a8baff',ruins:true},
+ {sky:['#211d47','#503966','#a7778c'],far:'#685a82',mid:'#51476e',near:'#373451',leaf:'#754d61',light:'#c47b70',bark:'#4d344d',stone:['#49394f','#75566d','#ac8590'],grass:['#734f4d','#b97555','#f0bb78'],accent:'#ffc188',ruins:true}
+];
+const mapArt=()=>MAP_ART[levelIndex]||MAP_ART[0];
+function pixelRect(x,y,w,h,c){if(w<=0||h<=0)return;ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function visibleArt(x,y,w,h,pad=32){return x+w>=cameraX-pad&&x<=cameraX+view.w+pad&&y+h>=cameraY-pad&&y<=cameraY+view.h+pad;}
+function pixelDisc(x,y,r,c,step=4){for(let dy=-r;dy<r;dy+=step){const hw=Math.sqrt(Math.max(0,r*r-(dy+step/2)**2));pixelRect(x-Math.floor(hw/step)*step,y+dy,Math.floor(hw/step)*step*2,step,c);}}
+function landscapeLayer(color,base,par,seed,amp){const shift=cameraX*par,vertical=cameraY*par*.22;ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-12,view.h+10);for(let x=-12;x<=view.w+24;x+=12){const wx=x+shift;const y=base-vertical-amp*(.5+.28*Math.sin(wx*.005+seed)+.22*Math.cos(wx*.012+seed*2));ctx.lineTo(x,Math.round(y/4)*4);}ctx.lineTo(view.w+24,view.h+10);ctx.closePath();ctx.fill();}
+function distantTree(x,y,s,color){pixelRect(x-3*s,y-40*s,6*s,42*s,color);for(let j=0;j<4;j++)pixelRect(x-(21-j*4)*s,y-(36+j*12)*s,(42-j*8)*s,16*s,color);}
 function drawSky(){
- const palette=[['#513c89','#ed8297','#ffd294'],['#2c2b66','#c16b8c','#ffd68e'],['#191d55','#785388','#dba078']][level?.theme||0];
- const grad=ctx.createLinearGradient(0,0,0,view.h);grad.addColorStop(0,palette[0]);grad.addColorStop(.48,palette[1]);grad.addColorStop(1,palette[2]);ctx.fillStyle=grad;ctx.fillRect(0,0,view.w,view.h);
- for(let i=0;i<65;i++){const x=fract(hash(i*79)*3+clock*.0006)*view.w,y=hash(i*98)*210;
-  const a=.24+.35*hash(i+20);ellipse(x,y,1+hash(i)*1.4,1+hash(i)*1.4,`rgba(255,236,188,${a})`);}
- const sunX=view.w*.78-cameraX*.014,sunY=157;
- let glow=ctx.createRadialGradient(sunX,sunY,2,sunX,sunY,190);glow.addColorStop(0,'#ffeacaa8');glow.addColorStop(.25,'#fff3b66b');glow.addColorStop(1,'#ffe6b000');ctx.fillStyle=glow;ctx.fillRect(sunX-200,sunY-200,400,400);
- ellipse(sunX,sunY,49,49,'#ffefbf');
- // soft fluffy clouds
- for(let i=0;i<11;i++){const bx=(i*337-cameraX*.085)%((view.w+750));const x=(bx+view.w+750)%(view.w+750)-320;let y=70+(i%4)*58+Math.sin(i*7)*16;
-  ctx.globalAlpha=.13;ellipse(x,y,74,17,'#fff4db');ellipse(x+30,y-10,41,18,'#fff4db');ellipse(x-38,y-7,37,16,'#fff4db');ctx.globalAlpha=1;
- }
- // distant mountains, several layers of hand-drawn silhouettes
- for(let l=0;l<3;l++){
-  const par=.12+l*.12,base=270+l*53;
-  ctx.fillStyle=['#7e6691','#926784','#7b6480'][l];ctx.globalAlpha=.54+l*.13;
-  ctx.beginPath();ctx.moveTo(-10,view.h);
-  for(let sx=-20;sx<view.w+40;sx+=18){const wx=sx+cameraX*par;const y=base-65*Math.abs(Math.sin(wx*.0034+l*.5))-20*Math.sin(wx*.011+l);ctx.lineTo(sx,y);}
-  ctx.lineTo(view.w+20,view.h);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
- }
- drawFarCastle(view.w*.79-cameraX*.11,225-(level?.theme||0)*14,.8);
+ const a=mapArt(),night=levelIndex>=6;
+ const grad=ctx.createLinearGradient(0,0,0,view.h);a.sky.forEach((c,i)=>grad.addColorStop(i/2,c));ctx.fillStyle=grad;ctx.fillRect(0,0,view.w,view.h);
+ const sx=view.w*.77-cameraX*.025,sy=112-cameraY*.025;
+ const glow=ctx.createRadialGradient(sx,sy,3,sx,sy,118);glow.addColorStop(0,night?'#e6cbff66':'#fff2ba88');glow.addColorStop(1,'#ffffff00');ctx.fillStyle=glow;ctx.fillRect(sx-118,sy-118,236,236);
+ pixelDisc(sx,sy,night?44:36,night?'#eadcf7':'#fff0c3',4);
+ if(night){ctx.globalAlpha=.35;pixelDisc(sx-11,sy-9,7,'#b7a5d1',3);pixelDisc(sx+14,sy+11,10,'#b7a5d1',3);ctx.globalAlpha=1;}
+ for(let i=0;i<18;i++){const x=hash(i*71+8)*view.w,y=hash(i*23+9)*200;if(night)pixelRect(x,y,2+(i%2)*2,2+(i%2)*2,'#ffffff80');else if(i<9){const cx=((x-cameraX*.045)%(view.w+180)+view.w+180)%(view.w+180)-80;ctx.globalAlpha=.34;pixelRect(cx,y+8,100,12,'#fff9e8');pixelRect(cx+16,y,54,12,'#fff9e8');pixelRect(cx+35,y-8,24,10,'#fff9e8');ctx.globalAlpha=1;}}
+ landscapeLayer(a.far,316,.10,2,112);
+ const offset=cameraX*.20,step=132,start=Math.floor(offset/step)-1,end=Math.ceil((offset+view.w)/step)+1;
+ for(let i=start;i<=end;i++){const x=i*step-offset+30,y=300-cameraY*.035+hash(i*63)*45;const s=.7+hash(i*31)*.75;distantTree(x,y,s,a.mid);}
+ landscapeLayer(a.mid,395,.24,5,95);
+ if(a.ruins){const off=cameraX*.32;for(let i=Math.floor(off/180)-1;i<=Math.ceil((off+view.w)/180)+1;i++){let x=i*180-off,y=290-cameraY*.06+Math.round(hash(i*17)*40);ctx.globalAlpha=.68;pixelRect(x,y,116,12,a.near);pixelRect(x,y+12,12,150,a.near);pixelRect(x+104,y+12,12,150,a.near);pixelRect(x+12,y+12,12,14,a.near);pixelRect(x+92,y+12,12,14,a.near);pixelRect(x+24,y+12,12,6,a.near);pixelRect(x+80,y+12,12,6,a.near);if(i%3===0){pixelRect(x+38,y-95,40,95,a.near);pixelRect(x+34,y-101,48,10,a.near);for(let k=0;k<3;k++)pixelRect(x+35+k*18,y-111,11,12,a.near);pixelRect(x+53,y-73,9,20,'#e5c4a76b');}ctx.globalAlpha=1;}}
+ landscapeLayer(a.near,510,.38,9,100);
+ // Distant cascades: decorative, never collision geometry.
+ if(levelIndex<7){const off=cameraX*.26;for(let i=Math.floor(off/430)-1;i<=Math.ceil((off+view.w)/430)+1;i++){let x=i*430-off+160,y=340-cameraY*.06;ctx.globalAlpha=.32;pixelRect(x,y,25,view.h-y,'#c4e6eb');pixelRect(x+5,y,4,view.h-y,'#f1f9ef');pixelRect(x+17,y+((clock*12)%24),3,Math.max(1,view.h-y-24),'#e9fbff');ctx.globalAlpha=1;}}
 }
-function drawFarCastle(x,y,scale=1){
- ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
- // hill under a fairytale castle
- ctx.fillStyle='#62647b';ctx.beginPath();ctx.ellipse(0,123,210,70,0,0,Math.PI*2);ctx.fill();
- const towers=[[-100,36,28,85],[-55,0,24,119],[-15,31,40,97],[34,-25,22,151],[73,14,27,114],[122,43,25,80]];
- for(const [tx,ty,tw,th] of towers){ctx.fillStyle='#655376';ctx.fillRect(tx,ty,tw,th);ctx.fillStyle='#4a456b';ctx.beginPath();ctx.moveTo(tx-10,ty+3);ctx.lineTo(tx+tw*.5,ty-32);ctx.lineTo(tx+tw+10,ty+3);ctx.fill();
-  for(let k=0;k<Math.floor(th/30);k++){fillRoundRect(tx+tw*.5-3,ty+14+k*28,6,12,3,'#ffcf829e');}
- }
- fillRoundRect(-88,69,192,58,2,'#5b4c70');for(let i=0;i<8;i++)fillRoundRect(-80+i*22,85,8,16,2,'#f4bd769c');
- ctx.restore();
-}
+function artTree(x,y,i,a){const scale=1+hash(i*61)*.5;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=.74;
+ pixelRect(-12,-158,24,158,a.bark);pixelRect(-8,-148,5,133,'#b18a775c');pixelRect(-25,-14,50,14,a.bark);
+ for(let k=0;k<5;k++){const cx=(k-2)*24,cy=-155-Math.round(hash(i*33+k)*32);pixelRect(Math.min(0,cx),cy+18,Math.abs(cx)+12,10,a.bark);pixelDisc(cx,cy,31,a.leaf,4);pixelDisc(cx-4,cy-8,23,a.light,4);for(let j=0;j<4;j++)pixelRect(cx-15+Math.round(hash(i*49+k*7+j)*28),cy-18+Math.round(hash(i*73+k*9+j)*23),4,4,a.accent);}
+ ctx.restore();}
+function artLantern(x,y,a){pixelRect(x-1,y-20,2,20,'#514457');const glow=ctx.createRadialGradient(x,y+9,1,x,y+9,30);glow.addColorStop(0,'#ffcb7770');glow.addColorStop(1,'#ffcb7700');ctx.fillStyle=glow;ctx.fillRect(x-30,y-21,60,60);pixelRect(x-9,y,18,20,'#55404d');pixelRect(x-6,y+3,12,14,'#ffd58a');pixelRect(x-4,y+4,3,10,'#fff2bb');pixelRect(x-11,y-3,22,4,'#9b785e');pixelRect(x-10,y+19,20,3,'#9b785e');}
 function drawTrees(){
- const start=Math.floor((cameraX-200)/230)-1,end=Math.ceil((cameraX+view.w+200)/230)+1;
- for(let i=start;i<=end;i++){if(i<0)continue;const x=i*230+60+(hash(i+99)-.5)*55,y=FLOOR+10;
-  ctx.save();ctx.translate(x,y);ctx.globalAlpha=.8;
-  // Trunk
-  fillRoundRect(-11,-137,21,137,8,'#72566b');fillRoundRect(-6,-135,5,110,3,'#a67a77');
-  const colors=['#416d68','#4c8468','#5a8b73','#55876a'];
-  for(let n=0;n<6;n++){const ox=(hash(i*15+n)-.5)*90,oy=-125+hash(i*29+n)*35;
-   ellipse(ox,oy,39+hash(i+n*7)*14,31,colors[(i+n)%4]);}
-  for(let n=0;n<12;n++){const ox=(hash(i*39+n*5)-.5)*110,oy=-153+hash(i*45+n)*55;ellipse(ox,oy,2.4,2.4,n%2?'#ffd1aa':'#ffe5b0');}
-  ctx.restore();
+ const a=mapArt();const start=Math.floor((cameraX-180)/260)-1,end=Math.ceil((cameraX+view.w+180)/260)+1;
+ for(let i=start;i<=end;i++){if(i<0)continue;const x=i*260+90+Math.round(hash(i*13)*60),y=FLOOR;
+ if(!visibleArt(x-120,y-265,240,265))continue;
+ if(!a.ruins||i%3===0){artTree(x,y,i,a);}else{ctx.globalAlpha=.55;pixelRect(x-26,y-258,52,258,a.near);pixelRect(x-30,y-260,60,12,a.mid);pixelRect(x-22,y-247,8,247,a.mid);for(let k=0;k<8;k++)pixelRect(x-26,y-k*32,52,2,a.far);pixelRect(x-36,y-12,72,12,a.mid);ctx.globalAlpha=1;artLantern(x,y-180,a);}
  }
 }
-function drawStoneBridge(){
- if((level?.theme||0)!==2)return;
- // A complete bridge, visibly unbroken, spans the river in the painted background.
- ctx.save();ctx.translate(-cameraX*.27+150,0);ctx.globalAlpha=.72;
- const width=level.width*.64,by=385;
- let g=ctx.createLinearGradient(0,by,0,540);g.addColorStop(0,'#818294');g.addColorStop(1,'#393951');ctx.fillStyle=g;
- ctx.fillRect(0,by,width,37);
- for(let x=0;x<width;x+=130){ctx.beginPath();ctx.arc(x+64,494,51,Math.PI,Math.PI*2);ctx.lineTo(x+115,540);ctx.lineTo(x+13,540);ctx.fill();}
- for(let x=0;x<width;x+=40){ctx.fillStyle='#c4a58b';ctx.fillRect(x,by+2,3,20)}
- for(let x=0;x<width;x+=11){ctx.fillStyle='#e8b99a';ctx.fillRect(x,by-18,7,17)}
- ctx.globalAlpha=1;ctx.restore();
-}
-function drawTerrain(){
- // Segmented floor; holes are deliberate game obstacles (not broken background bridge).
- for(const [x,w] of level.ground){
-  const y=FLOOR;
-  const dirt=ctx.createLinearGradient(0,y+10,0,700);dirt.addColorStop(0,'#9d6a62');dirt.addColorStop(.3,'#755267');dirt.addColorStop(1,'#423d59');ctx.fillStyle=dirt;ctx.fillRect(x,y,w,600);
-  fillRoundRect(x,y-13,w,23,9,'#577a54');fillRoundRect(x,y-15,w,10,5,'#86b66f');
-  ctx.save();ctx.beginPath();ctx.rect(x,y+10,w,200);ctx.clip();
-  for(let bx=x;bx<x+w;bx+=66){for(let row=0;row<4;row++){
-    const sx=bx+(row%2)*33,sy=y+18+row*39;
-    strokeRoundRect(sx,sy,64,38,7,'#d5a2833f',2);
-    if(hash(sx*2+row)>.65)ellipse(sx+18,sy+12,3,2,'#e6a87e55');
-  }}
-  ctx.restore();
-  for(let px=x+35;px<x+w-20;px+=42){const h=hash(px*3.35);if(h>.6){
-    ctx.strokeStyle='#326957';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,y-15);ctx.lineTo(px,y-21-h*12);ctx.stroke();
-    ellipse(px-4,y-22-h*12,5,3,'#4e8f6e');ellipse(px+4,y-20-h*12,5,3,'#5d9e78');
-    if(h>.84){ellipse(px,y-25-h*12,4,4,'#ffb3c6');ellipse(px,y-25-h*12,1.8,1.8,'#f9e2a0')}
-  }}
- }
- for(const [x,y,w] of level.platforms){
-  fillRoundRect(x,y,w,18,7,'#86687c');fillRoundRect(x,y-7,w,12,6,'#7ca775');
-  ctx.fillStyle='#d5b294';ctx.fillRect(x+12,y+10,w-24,2);
-  for(let k=0;k<w;k+=35)strokeRoundRect(x+k,y+4,34,14,3,'#452e55a0',2);
- }
-}
-function drawFlower(x,y,pink=true){
- const c=pink?'#f5a2c0':'#fbd98a';ctx.save();ctx.translate(x,y);
- for(let i=0;i<5;i++){const a=i*1.257;ellipse(Math.cos(a)*6,Math.sin(a)*6,5.4,5.4,c)}ellipse(0,0,4.2,4.2,'#ffecbc');ctx.restore();
-}
+function artStone(x,y,w,h,a,grass=false){if(!visibleArt(x,y,w,h))return;
+ // Clip to actual rectangle: highlights do not extend the collision footprint.
+ ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();pixelRect(x,y,w,h,a.stone[0]);
+ const tw=40,th=24;let minY=Math.max(y,Math.floor((cameraY-y)/th)*th+y-th),maxY=Math.min(y+h,cameraY+view.h+th);
+ for(let yy=minY;yy<maxY;yy+=th){const row=Math.round((yy-y)/th),off=(row%2)*20;let start=Math.max(-1,Math.floor((cameraX-x-off)/tw)-1),end=Math.min(Math.ceil(w/tw),Math.ceil((cameraX+view.w-x-off)/tw)+1);for(let n=start;n<=end;n++){const xx=x+off+n*tw,rand=hash(xx*13+yy*19);pixelRect(xx+1,yy+1,tw-2,th-2,a.stone[1]);pixelRect(xx+2,yy+2,tw-4,3,a.stone[2]);pixelRect(xx+2,yy+5,3,th-8,a.stone[2]);pixelRect(xx+tw-5,yy+7,3,th-10,a.stone[0]);if(rand>.42){pixelRect(xx+10,yy+10,8,3,a.stone[0]);pixelRect(xx+17,yy+13,4,5,a.stone[0]);}if(rand>.75)pixelRect(xx+27,yy+7,5,3,a.stone[2]);}}
+ if(grass){pixelRect(x,y,w,Math.min(9,h),a.grass[0]);pixelRect(x,y,w,Math.min(4,h),a.grass[2]);let sx=Math.max(x,Math.floor((cameraX-x)/8)*8+x-8);for(let xx=sx;xx<Math.min(x+w,cameraX+view.w+12);xx+=8){let n=hash(xx*7+y*3);pixelRect(xx,y+4,8,4+Math.floor(n*8),a.grass[1]);if(n>.65)pixelRect(xx+2,y+12,4,4,a.grass[0]);}}
+ else pixelRect(x,y,w,Math.min(3,h),a.stone[2]);ctx.restore();}
+function drawTerrain(){const a=mapArt();for(const [x,w] of level.ground)artStone(x,FLOOR,w,Math.max(120,level.height-FLOOR+120),a,true);for(const [x,y,w] of level.platforms)artStone(x,y,w,18,a,true);}
+function drawFlower(x,y,pink=true){const c=pink?'#f5a2c0':'#fbd98a';pixelRect(x-1,y-5,3,11,c);pixelRect(x-5,y-1,11,3,c);pixelRect(x-2,y-2,5,5,'#fff1b9');}
 function drawDecor(){
- const a=Math.floor((cameraX-160)/115),b=Math.ceil((cameraX+view.w+160)/115);
- for(let i=a;i<=b;i++){if(i<0)continue;const x=i*115+hash(i)*45;
-  const grounded=level.ground.find(([gx,w])=>x>gx+18&&x<gx+w-18);if(!grounded)continue;
-  if(hash(i*65)>.38)drawFlower(x,FLOOR-22,hash(i+8)>.38);
-  if(hash(i*71)>.75){ellipse(x+15,FLOOR-15,12,9,'#e09e74');ellipse(x+15,FLOOR-17,8,4,'#f0c99f');}
- }
+ const a=mapArt();for(const [x,y,w] of [...level.ground.map(([x,w])=>[x,FLOOR,w]),...level.platforms]){if(!visibleArt(x,y-25,w,30))continue;let start=Math.max(0,Math.floor((cameraX-x)/32)-1),end=Math.min(Math.floor(w/32),Math.ceil((cameraX+view.w-x)/32)+1);for(let i=start;i<=end;i++){const xx=x+i*32+10;if(xx>x+w-10)continue;const r=hash(xx*29+y*3);if(r<.28)continue;pixelRect(xx,y-7,3,7,a.grass[1]);pixelRect(xx-4,y-4,5,3,a.grass[0]);pixelRect(xx+3,y-6,5,3,a.grass[1]);if(r>.73){pixelRect(xx,y-13,2,10,a.grass[1]);drawFlower(xx,y-14,r>.87);}}}
+}
+function drawMapPuzzle(o){const a=mapArt(),{x,y,w,h}=o;if(!visibleArt(x,y,w,h,45))return;
+ if(o.kind==='solid'){artStone(x,y,w,h,a,false);return;}
+ if(o.kind==='crate'){ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();pixelRect(x,y,w,h,'#644a49');pixelRect(x+3,y+3,w-6,h-6,'#b58457');for(let k=8;k<w-4;k+=13){pixelRect(x+k,y+5,2,h-10,'#805635');pixelRect(x+k+2,y+5,2,h-10,'#d6a46e');}ctx.strokeStyle='#7f553d';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+5,y+5);ctx.lineTo(x+w-5,y+h-5);ctx.moveTo(x+w-5,y+5);ctx.lineTo(x+5,y+h-5);ctx.stroke();for(const xx of [x+2,x+w-10])for(const yy of [y+2,y+h-10]){pixelRect(xx,yy,8,8,'#5e6174');pixelRect(xx+2,yy+2,3,3,'#f0cf93');}ctx.restore();return;}
+ const c=o.kind==='plate'?(o.pressed?'#9af4ae':'#ffd080'):(o.open?'#83e9bd':'#ffc17a');
+ if(o.kind==='plate'){pixelRect(x,y,w,h,'#53465e');pixelRect(x+2,y+2,w-4,Math.min(4,h-2),c);pixelRect(x+6,y+h-3,w-12,2,'#8d8397');}
+ else if(o.kind==='door'){if(!o.open){pixelRect(x,y,w,h,'#514459');pixelRect(x+2,y+2,w-4,h-4,'#7b697e');if(h>=w){for(let yy=Math.max(y+4,Math.floor((cameraY-y)/24)*24+y);yy<Math.min(y+h-4,cameraY+view.h+24);yy+=24)pixelRect(x+3,yy,w-6,2,'#453d58');pixelRect(x+w/2-2,y+3,4,h-6,c);}else{for(let xx=x+4;xx<x+w-4;xx+=24)pixelRect(xx,y+3,2,h-6,'#453d58');pixelRect(x+3,y+h/2-2,w-6,4,c);}}else{ctx.globalAlpha=.55;pixelRect(x,y,w,2,c);pixelRect(x,y+h-2,w,2,c);ctx.globalAlpha=1;}}
+ ctx.save();ctx.fillStyle='#fff3ce';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText(o.channel,x+w/2,y-5);ctx.restore();
 }
 function drawFruit(x,y,type=0,r=14,phase=0){
  const colors=['#ff716b','#f8b85e','#df83a0','#acd977'];const c=colors[type%4];
@@ -583,23 +554,16 @@ function drawRescue(){if(!rescue)return;const x=rescue.x,y=rescue.y+Math.sin(clo
  ctx.save();ctx.fillStyle='#ffe3f5';ctx.textAlign='center';ctx.font='900 12px system-ui';ctx.fillText('RESGATAR LULI',x,y-48);ctx.restore();
  if(x<cameraX+30||x>cameraX+view.w-40||y<cameraY+25||y>cameraY+view.h-25){const sx=clamp(x-cameraX,45,view.w-45),sy=clamp(y-cameraY,90,view.h-45);const arrow=y<cameraY+25?'↑':y>cameraY+view.h-25?'↓':x<cameraX+30?'◀':'▶';ctx.save();ctx.fillStyle='#ffcdf0';ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillText(arrow+' LULI',cameraX+sx,cameraY+sy);ctx.restore()}
 }
-function drawPortal(){if(level.gate===null)return;const x=level.gate,bossActive=bossBlocksPortal();const text=levelIndex===LEVELS.length-1?'CASA':'PRÓXIMA FASE';
- ctx.save();ctx.translate(x,level.gateY??FLOOR);ctx.shadowColor=bossActive?'#d18d9e':'#ffe5ba';ctx.shadowBlur=23;
- ctx.strokeStyle=bossActive?'#a16e82':'#f3c998';ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(-42,0);ctx.lineTo(-42,-96);ctx.quadraticCurveTo(0,-156,42,-96);ctx.lineTo(42,0);ctx.stroke();ctx.shadowBlur=0;
- ctx.strokeStyle=bossActive?'#78516f':'#8f6180';ctx.lineWidth=4;ctx.stroke();
- let g=ctx.createRadialGradient(0,-65,3,0,-65,79);g.addColorStop(0,bossActive?'#aaa0bb99':'#f4e1ffdd');g.addColorStop(.6,bossActive?'#ac748455':'#ffb9df99');g.addColorStop(1,'#ffffff00');ctx.fillStyle=g;ctx.fillRect(-85,-154,170,160);
- ctx.fillStyle='#ffefc4';ctx.font='900 14px system-ui';ctx.textAlign='center';ctx.fillText(bossActive?'BLOQUEADO':!luliPresent?'RESGATE LULI':parked?'REÚNA A DUPLA':text,0,-167);ctx.restore();}
-function drawEnvironmentExtra(){// colorful fruit kingdom islands: small mushrooms, banners and flowers
- const a=Math.floor((cameraX-100)/430),b=Math.ceil((cameraX+view.w+100)/430);
- for(let i=a;i<=b;i++){if(i<0)continue;const x=240+i*430;
- if(!groundAt(x))continue;
- ctx.save();ctx.translate(x,FLOOR);ctx.globalAlpha=.65;
- fillRoundRect(-43,-86,84,71,23,i%2?'#c48898':'#d59d72');
- ellipse(0,-81,61,28,i%2?'#e3a5b5':'#e6b07b');
- fillRoundRect(-13,-53,27,37,7,'#755371');ellipse(-20,-88,7,6,'#fff2d9');ellipse(20,-93,7,6,'#fff2d9');ctx.restore();}
- if(levelIndex===2){const x=1300-cameraX*.3;
- ctx.save();ctx.globalAlpha=.5;ctx.fillStyle='#79a4a1';ctx.fillRect(x,338,view.w,90);ctx.globalAlpha=1;ctx.restore();}
-}
+function drawPortal(){if(level.gate===null)return;const x=level.gate,y=level.gateY??FLOOR;if(!visibleArt(x-90,y-180,180,184,50))return;const bossActive=bossBlocksPortal(),text=levelIndex===LEVELS.length-1?'CASA':'PRÓXIMA FASE',a=mapArt();
+ ctx.save();ctx.translate(x,y);const locked=bossActive||!luliPresent||parked,accent=bossActive?'#aa829e':'#f6bfff';const glow=ctx.createRadialGradient(0,-65,3,0,-65,95);glow.addColorStop(0,locked?'#9e7ea450':'#f6bbff77');glow.addColorStop(1,'#ffffff00');ctx.fillStyle=glow;ctx.fillRect(-95,-160,190,175);
+ // Portal core, stepped arch, carved masonry and luminous keystone.
+ const core=locked?'#524660':'#9368bf';pixelRect(-33,-92,66,92,core);pixelDisc(0,-92,33,core,4);
+ ctx.save();ctx.beginPath();ctx.moveTo(-31,0);ctx.lineTo(-31,-92);ctx.quadraticCurveTo(0,-152,31,-92);ctx.lineTo(31,0);ctx.closePath();ctx.clip();
+ if(!locked){for(let i=0;i<4;i++){const r=10+i*9;ctx.strokeStyle=i%2?'#fbd4ff':'#c5a1ff';ctx.globalAlpha=.66-i*.09;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,-65,r,r*1.55,Math.sin(clock*.65+i)*.30,clock*.75+i,clock*.75+i+4.8);ctx.stroke();}ctx.globalAlpha=1;for(let i=0;i<9;i++){const px=(hash(i*89)-.5)*58,py=-12-fract(hash(i*19)+clock*.12)*112;pixelRect(px,py,3,3,'#ffecff');}}else{for(let yy=-105;yy<0;yy+=12)pixelRect(-31,yy,62,2,'#806785');}ctx.restore();
+ for(const side of [-1,1]){for(let yy=-90;yy<0;yy+=18){let xx=side===-1?-48:34;pixelRect(xx,yy,14,17,a.stone[0]);pixelRect(xx+2,yy+2,10,13,a.stone[1]);pixelRect(xx+2,yy+2,10,3,a.stone[2]);}pixelRect(side===-1?-53:29,-4,24,7,a.stone[2]);}
+ for(let i=0;i<=8;i++){const ang=Math.PI+i*Math.PI/8,xx=Math.cos(ang)*41,yy=-90+Math.sin(ang)*40;pixelRect(xx-9,yy-8,18,16,a.stone[0]);pixelRect(xx-7,yy-6,14,12,a.stone[1]);pixelRect(xx-7,yy-6,14,3,a.stone[2]);}
+ pixelRect(-12,-141,24,20,a.stone[0]);pixelRect(-7,-138,14,14,accent);pixelRect(-3,-134,6,6,'#fff0df');
+ ctx.fillStyle='#fff3ce';ctx.font='900 14px system-ui';ctx.textAlign='center';ctx.fillText(bossActive?'BLOQUEADO':!luliPresent?'RESGATE LULI':parked?'REÚNA A DUPLA':text,0,-167);ctx.restore();}
 function drawParticles(){for(const p of particles){ctx.globalAlpha=clamp(p.t/p.max,0,1);ellipse(p.x,p.y,p.r,p.r,p.color)}ctx.globalAlpha=1}
 function drawCheckpoint(){for(const cp of level.checkpoints||[]){const x=cp.x;
  ctx.save();ctx.translate(x,cp.y??FLOOR);
@@ -623,7 +587,7 @@ function drawForeground(){
 
 function draw(){ctx.setTransform(canvas.width/view.w,0,0,canvas.height/view.h,0,0);ctx.clearRect(0,0,view.w,view.h);
  if(!level){ctx.fillStyle='#33204d';ctx.fillRect(0,0,view.w,view.h);return}
- drawSky();drawStoneBridge();ctx.save();ctx.translate(-cameraX,-cameraY);drawTrees();drawEnvironmentExtra();drawTerrain();drawDecor();for(const o of puzzle)LuliPuzzles.paint(ctx,o);
+ drawSky();ctx.save();ctx.translate(-cameraX,-cameraY);drawTrees();drawTerrain();drawDecor();for(const o of puzzle)drawMapPuzzle(o);
  for(const f of fruits)if(!f.found&&f.x>cameraX-35&&f.x<cameraX+view.w+35)drawFruit(f.x,f.y,f.type,12,f.phase);
  drawCheckpoint();drawPortal();
  for(const npc of npcList)if(npc.x>cameraX-110&&npc.x<cameraX+view.w+110)drawNPCNew(npc);
