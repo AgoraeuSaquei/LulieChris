@@ -115,7 +115,7 @@ function runEnemyTests(P,E,campaign,game,html,story,loadGame){
         assert(Math.abs(e.x-e.home)<=e.ai.range+.051,'level '+(i+1)+' patrol range exceeded');
       }
     }
-    assert(total===22,'unexpected enemy count');
+    assert(total===25,'unexpected enemy count');
   });
   test('real game boss bar draws 100%, 50%, 12.5%',()=>{
     runtime.startLevel(7);const boss=runtime.getEnemies().find(e=>e.type==='pumpkin');
