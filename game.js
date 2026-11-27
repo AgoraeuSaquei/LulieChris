@@ -481,6 +481,7 @@ function drawDecor(){
 }
 function drawMapPuzzle(o){const a=mapArt(),{x,y,w,h}=o;if(!visibleArt(x,y,w,h,45))return;
  if(o.kind==='solid'){if(!window.LuliFantasyTiles?.draw(ctx,levelIndex,'solid',x,y,w,h,view,cameraX,cameraY))artStone(x,y,w,h,a,false);return;}
+ if(window.LuliFantasyObjects?.draw(ctx,o)){if(o.kind!=='crate'){ctx.save();ctx.fillStyle='#fff3ce';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText(o.channel,x+w/2,y-5);ctx.restore();}return;}
  if(o.kind==='crate'){ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();pixelRect(x,y,w,h,'#644a49');pixelRect(x+3,y+3,w-6,h-6,'#b58457');for(let k=8;k<w-4;k+=13){pixelRect(x+k,y+5,2,h-10,'#805635');pixelRect(x+k+2,y+5,2,h-10,'#d6a46e');}ctx.strokeStyle='#7f553d';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+5,y+5);ctx.lineTo(x+w-5,y+h-5);ctx.moveTo(x+w-5,y+5);ctx.lineTo(x+5,y+h-5);ctx.stroke();for(const xx of [x+2,x+w-10])for(const yy of [y+2,y+h-10]){pixelRect(xx,yy,8,8,'#5e6174');pixelRect(xx+2,yy+2,3,3,'#f0cf93');}ctx.restore();return;}
  const c=o.kind==='plate'?(o.pressed?'#9af4ae':'#ffd080'):(o.open?'#83e9bd':'#ffc17a');
  if(o.kind==='plate'){pixelRect(x,y,w,h,'#53465e');pixelRect(x+2,y+2,w-4,Math.min(4,h-2),c);pixelRect(x+6,y+h-3,w-12,2,'#8d8397');}
@@ -565,7 +566,7 @@ function drawPortal(){if(level.gate===null)return;const x=level.gate,y=level.gat
  pixelRect(-12,-141,24,20,a.stone[0]);pixelRect(-7,-138,14,14,accent);pixelRect(-3,-134,6,6,'#fff0df');
  ctx.fillStyle='#fff3ce';ctx.font='900 14px system-ui';ctx.textAlign='center';ctx.fillText(bossActive?'BLOQUEADO':!luliPresent?'RESGATE LULI':parked?'REÚNA A DUPLA':text,0,-167);ctx.restore();}
 function drawParticles(){for(const p of particles){ctx.globalAlpha=clamp(p.t/p.max,0,1);ellipse(p.x,p.y,p.r,p.r,p.color)}ctx.globalAlpha=1}
-function drawCheckpoint(){for(const cp of level.checkpoints||[]){const x=cp.x;
+function drawCheckpoint(){for(const cp of level.checkpoints||[]){const x=cp.x;if(window.LuliFantasyObjects?.checkpoint(ctx,x,cp.y??FLOOR,activatedCheckpoints.has(cp.id)))continue;
  ctx.save();ctx.translate(x,cp.y??FLOOR);
  ctx.strokeStyle='#735866';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-115);ctx.stroke();
  ctx.fillStyle='#efb1a9';ctx.beginPath();ctx.moveTo(2,-114);ctx.quadraticCurveTo(40,-116,60,-105);ctx.lineTo(60,-66);ctx.quadraticCurveTo(29,-84,2,-71);ctx.closePath();ctx.fill();
